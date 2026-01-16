@@ -1,0 +1,163 @@
+# ==========================================
+# Htaccess untuk Aplikasi Web Hadrahin
+# ==========================================
+
+# 1. Aktifkan Rewrite Engine
+# ---------------------------
+RewriteEngine On
+RewriteBase /hadrahin/
+
+# 2. Definisi Rules untuk URL Routing
+# ------------------------------------
+# Redirect URL yang berakhir dengan slash ke tanpa slash (menghindari duplicate content)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+# Jika file atau direktori tidak ditemukan, redirect ke index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]
+
+# 3. Keamanan - Block Akses File Sensitif
+# ----------------------------------------
+# Block akses ke semua file yang dimulai dengan dot (.)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block akses ke file konfigurasi dan database
+<FilesMatch "\.(env|sql|ini|log|md|txt|yml|yaml|json|xml)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block akses langsung ke file PHP tertentu
+<Files "*.php">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
+
+# Allow akses ke index.php dan file-file tertentu
+<Files "index.php">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
+
+# 4. Security Headers
+# -------------------
+# Mencegah clickjacking
+Header always set X-Frame-Options "SAMEORIGIN"
+
+# Mencegah XSS attacks
+Header always set X-XSS-Protection "1; mode=block"
+
+# Mencegah content-type sniffing
+Header always set X-Content-Type-Options "nosniff"
+
+# Referrer policy untuk privasi
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Content Security Policy (sesuaikan dengan kebutuhan)
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self';"
+
+# 5. PHP Settings via htaccess
+# -----------------------------
+# Set maximum execution time (300 detik = 5 menit)
+php_value max_execution_time 300
+
+# Set maximum input time
+php_value max_input_time 300
+
+# Set memory limit
+php_value memory_limit 128M
+
+# Set upload max file size (10MB)
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+
+# 6. Cache Control Headers (Opsional - untuk production)
+# --------------------------------------------------------
+# Cache untuk gambar (1 bulan)
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    
+    # Cache untuk CSS dan JavaScript (1 minggu)
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType text/javascript "access plus 1 week"
+    
+    # Cache untuk audio/video (1 bulan)
+    ExpiresByType audio/mpeg "access plus 1 month"
+    ExpiresByType video/mp4 "access plus 1 month"
+    ExpiresByType video/ogg "access plus 1 month"
+    
+    # Cache untuk file lain (1 hari)
+    ExpiresByType application/pdf "access plus 1 day"
+    ExpiresByType text/plain "access plus 1 day"
+</IfModule>
+
+# 7. Gzip Compression (jika mod_deflate tersedia)
+# -------------------------------------------------
+<IfModule mod_deflate.c>
+    # Compress HTML, CSS, JavaScript, Text, XML and fonts
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE application/x-font-otf
+    AddOutputFilterByType DEFLATE application/x-font-truetype
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE font/otf
+    AddOutputFilterByType DEFLATE font/ttf
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+</IfModule>
+
+# 8. Error Pages Custom (Opsional)
+# ----------------------------------
+ErrorDocument 400 /error.php?code=400
+ErrorDocument 401 /error.php?code=401
+ErrorDocument 403 /error.php?code=403
+ErrorDocument 404 /error.php?code=404
+ErrorDocument 500 /error.php?code=500
+
+# 9. Directory Browsing - Disable
+# --------------------------------
+Options -Indexes
+
+# 10. Server Signature - Hide
+# ----------------------------
+ServerSignature Off
+
+# 11. trailing slash redirect (opsional)
+# ---------------------------------------
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)([^/])$ /$1$2/ [L,R=301]
+

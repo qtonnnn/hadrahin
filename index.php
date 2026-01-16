@@ -1,0 +1,1 @@
+form ini akan berisi animasi pembuka halaman web selama 5 detik sebelum masuk ke halaman login.
