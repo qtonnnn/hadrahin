@@ -1,0 +1,244 @@
+# 📚 Dokumentasi Database Hadrah
+
+Dokumentasi ini menjelaskan struktur database sistem informasi grup hadrah.
+
+---
+
+## 🎯 Struktur Database
+
+Sistem Hadrah menggunakan **8 tabel utama** yang saling terhubung:
+
+```
+user (pengguna sistem)
+    │
+    ├──▶ absen_latihan (absensi latihan)
+    │         ▲
+    │         └── jadwal_latihan (jadwal latihan)
+    │
+    ├──▶ booking_acara (pesanan manggung)
+    │         │
+    │         ├──▶ dokumentasi_acara (foto/video acara)
+    │         │
+    │         └──▶ dresscode (pakaian/seragam)
+    │
+    ├──▶ dresscode (pengelolaan pakaian)
+    │
+    └──▶ alat (inventaris alat musik)
+    │
+    └──▶ keuangan (catatan kas)
+```
+
+---
+
+## 📋 Detail Tabel
+
+### 1. **Tabel `user`** - Manajemen Pengguna
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_user` | INT | Primary Key |
+| `username` | VARCHAR(50) | Unique, untuk login |
+| `password` | VARCHAR(255) | Hash Bcrypt |
+| `nama_lengkap` | VARCHAR(100) | Nama anggota |
+| `no_hp` | VARCHAR(20) | Nomor HP |
+| `alamat` | TEXT | Alamat anggota |
+| `peran` | ENUM | `admin`, `pembina`, `anggota` |
+| `status_aktif` | TINYINT | 1=aktif, 0=tidak aktif |
+| `tanggal_gabung` | DATE | Tanggal gabung |
+
+**Peran Pengguna:**
+- **Admin**: Akses penuh ke semua fitur
+- **Pembina**: Monitoring jadwal & absensi
+- **Anggota**: Melihat jadwal & absensi sendiri
+
+---
+
+### 2. **Tabel `jadwal_latihan`** - Jadwal Latihan
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_jadwal` | INT | Primary Key |
+| `tanggal` | DATE | Tanggal latihan |
+| `jam_mulai` | TIME | Jam mulai |
+| `jam_selesai` | TIME | Jam selesai |
+| `lokasi` | VARCHAR(150) | Tempat latihan |
+| `status` | ENUM | `direncanakan`, `selesai`, `dibatalkan` |
+| `materi_latihan` | TEXT | Materi yang dipelajari |
+| `catatan` | TEXT | Catatan tambahan |
+
+---
+
+### 3. **Tabel `absen_latihan`** - Absensi Latihan
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_absen` | INT | Primary Key |
+| `id_jadwal` | INT | Foreign Key ke `jadwal_latihan` |
+| `id_user` | INT | Foreign Key ke `user` |
+| `status_hadir` | ENUM | `hadir`, `izin`, `alpa` |
+| `catatan` | TEXT | Catatan absensi |
+
+**Constraint:**
+- Unique constraint pada `(id_jadwal, id_user)` mencegah absensi ganda
+
+---
+
+### 4. **Tabel `dresscode`** - Pengelolaan Pakaian/Seragam
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_dresscode` | INT | Primary Key |
+| `nama_pakaian` | VARCHAR(100) | Nama pakaian/seragam |
+| `deskripsi` | TEXT | Deskripsi lengkap pakaian |
+| `warna` | VARCHAR(50) | Warna pakaian |
+| `status` | ENUM | `aktif`, `nonaktif` |
+| `created_at` | TIMESTAMP | Waktu dibuat |
+| `updated_at` | TIMESTAMP | Waktu diupdate |
+
+**Kegunaan:**
+- Mengelola data pakaian/seragam yang digunakan saat tampil
+- Admin dapat menambah, edit, atau nonaktifkan dresscode
+- Dropdown di form booking acara mengambil data dari tabel ini
+
+---
+
+### 5. **Tabel `booking_acara`** - Pesanan Manggung
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_booking` | INT | Primary Key |
+| `id_user` | INT | Foreign Key ke `user` |
+| `id_dresscode` | INT | Foreign Key ke `dresscode` |
+| `nama_acara` | VARCHAR(150) | Nama acara |
+| `nama_pemesan` | VARCHAR(100) | Nama pemesan |
+| `no_hp_pemesan` | VARCHAR(20) | HP pemesan |
+| `tanggal_acara` | DATE | Tanggal acara |
+| `jam_mulai` | TIME | Jam mulai |
+| `lokasi` | VARCHAR(150) | Lokasi acara |
+| `status` | ENUM | `menunggu`, `diterima`, `ditolak`, `selesai` |
+
+**Perubahan:**
+- Kolom `dresscode` VARCHAR dipindahkan ke tabel `dresscode`
+- Menambahkan `id_dresscode` sebagai Foreign Key
+
+**Alur Status:**
+```
+menunggu → diterima → selesai
+         ↓
+       ditolak
+```
+
+---
+
+### 5. **Tabel `dokumentasi_acara`** - Foto/Video Acara
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_dokumentasi` | INT | Primary Key |
+| `id_booking` | INT | Foreign Key ke `booking_acara` |
+| `file_path` | VARCHAR(255) | Path file di folder uploads |
+| `tipe_file` | ENUM | `foto`, `video` |
+| `keterangan` | VARCHAR(150) | Keterangan foto/video |
+
+**Lokasi Penyimpanan:**
+- Folder: `assets/uploads/dokumentasi/`
+
+---
+
+### 6. **Tabel `alat`** - Inventaris Alat Musik
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_alat` | INT | Primary Key |
+| `nama_alat` | VARCHAR(100) | Nama alat |
+| `jumlah_baik` | INT | Jumlah kondisi bagus |
+| `jumlah_rusak` | INT | Jumlah rusak |
+| `keterangan` | TEXT | Catatan kondisi |
+
+**Cara Update Kondisi:**
+- Jika alat diperbaiki: `jumlah_rusak` dikurang, `jumlah_baik` ditambah
+
+---
+
+### 7. **Tabel `keuangan`** - Catatan Kas
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id_kas` | INT | Primary Key |
+| `tipe` | ENUM | `pemasukan`, `pengeluaran` |
+| `kategori` | VARCHAR(50) | Jenis transaksi |
+| `jumlah` | DECIMAL(12,2) | Jumlah uang |
+| `keterangan` | TEXT | Detail transaksi |
+| `tanggal` | DATE | Tanggal transaksi |
+| `bukti_transaksi` | VARCHAR(255) | Path file bukti nota |
+
+**Lokasi Bukti:**
+- Folder: `assets/uploads/bukti_kas/`
+
+**Contoh Kategori:**
+- Pemasukan: `Iuran Anggota`, `Honor Acara`
+- Pengeluaran: `Konsumsi`, `Servis Alat`, `Seragam`
+
+---
+
+## 🔗 Relasi Foreign Key
+
+| Tabel | Foreign Key | Referensi |
+|-------|-------------|-----------|
+| `absen_latihan` | `id_jadwal` → `jadwal_latihan.id_jadwal` | ON DELETE CASCADE |
+| `absen_latihan` | `id_user` → `user.id_user` | ON DELETE CASCADE |
+| `dokumentasi_acara` | `id_booking` → `booking_acara.id_booking` | ON DELETE CASCADE |
+| `booking_acara` | `id_dresscode` → `dresscode.id_dresscode` | ON DELETE SET NULL |
+| `booking_acara` | `id_user` → `user.id_user` | ON DELETE SET NULL |
+
+---
+
+## 📊 Alur Penggunaan Sistem
+
+### 1. **Keanggotaan**
+```
+Input data anggota → Atur peran → Anggota bisa login
+```
+
+### 2. **Latihan & Absensi**
+```
+Buat jadwal latihan → Anggota absen → Laporan kehadiran
+```
+
+### 3. **Booking Acara**
+```
+Pemesan booking → Admin setujui/jadwal → Status diubah → Dokumentasi
+```
+
+### 4. **Inventaris**
+```
+Input alat → Update kondisi saat servis/rusak → Laporan inventaris
+```
+
+### 5. **Keuangan**
+```
+Catatan pemasukan/pengeluaran → Upload bukti nota → Laporan kas
+```
+
+---
+
+## ⚡ Tips Penggunaan
+
+1. **Backup rutin** database terutama sebelum perubahan struktur
+2. **Validasi upload** file sebelum simpan ke folder uploads
+3. **Gunakan prepared statement** untuk mencegah SQL injection
+4. **Update status jadwal** ke `selesai` setelah latihan selesai
+5. **Pisahkan foto dan video** di folder berbeda jika perlu
+
+---
+
+
+
+
+## 📌 Versi
+
+- **Versi Database:** 1.0
+- **Tanggal Buat:** 18 Januari 2026
+- **MariaDB Version:** 10.4.32
+- **PHP Version:** 8.2.12
+
