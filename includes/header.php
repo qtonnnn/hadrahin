@@ -17,7 +17,7 @@
     <!-- Navbar untuk user yang sudah login -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container">
-            <a class="navbar-brand" href="index.php">
+            <a class="navbar-brand" href="<?= BASE_URL ?>/dashboard/<?= $_SESSION['peran'] ?>.php">
                 <i class="bi bi-house-door"></i> Hadrah App
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -26,32 +26,32 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php?page=dashboard">
+                        <a class="nav-link" href="<?= BASE_URL ?>/dashboard/<?= $_SESSION['peran'] ?>.php">
                             <i class="bi bi-speedometer2"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php?page=absen">
+                        <a class="nav-link" href="<?= BASE_URL ?>/modules/absen/index.php">
                             <i class="bi bi-calendar-check"></i> Absensi
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php?page=acara">
+                        <a class="nav-link" href="<?= BASE_URL ?>/modules/acara/index.php">
                             <i class="bi bi-calendar-event"></i> Acara
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php?page=alat">
+                        <a class="nav-link" href="<?= BASE_URL ?>/modules/alat/index.php">
                             <i class="bi bi-box-seam"></i> Inventaris
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php?page=keuangan">
+                        <a class="nav-link" href="<?= BASE_URL ?>/modules/keuangan/index.php">
                             <i class="bi bi-cash-stack"></i> Keuangan
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php?page=user">
+                        <a class="nav-link" href="<?= BASE_URL ?>/modules/user/index.php">
                             <i class="bi bi-people"></i> Anggota
                         </a>
                     </li>
@@ -62,11 +62,11 @@
                             <i class="bi bi-person-circle"></i> <?= $_SESSION['nama'] ?? 'User' ?>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="index.php?page=user&action=profile">
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>/modules/user/edit.php?id=<?= $_SESSION['user_id'] ?>">
                                 <i class="bi bi-person"></i> Profil
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php">
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>/auth/logout.php">
                                 <i class="bi bi-box-arrow-right"></i> Logout
                             </a></li>
                         </ul>

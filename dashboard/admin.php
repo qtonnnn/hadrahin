@@ -24,7 +24,7 @@ $user = $stmt->fetch();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - Hadrah</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
 </head>
 <body>
     <nav class="navbar">
@@ -32,7 +32,7 @@ $user = $stmt->fetch();
         <div class="user-info">
             <span>Halo, <?= htmlspecialchars($_SESSION['nama_lengkap']) ?></span>
             <span class="role-badge">ADMIN</span>
-            <a href="../auth/logout.php" class="btn-logout">Logout</a>
+            <a href="<?= BASE_URL ?>/auth/logout.php" class="btn-logout">Logout</a>
         </div>
     </nav>
 
@@ -47,31 +47,31 @@ $user = $stmt->fetch();
             <div class="action-card">
                 <h3>Manajemen User</h3>
                 <p>Kelola data admin, pembina, dan anggota</p>
-                <a href="../modules/user/index.php">Kelola User</a>
+                <a href="<?= BASE_URL ?>/modules/user/index.php">Kelola User</a>
             </div>
 
             <div class="action-card">
                 <h3>Jadwal Latihan</h3>
                 <p>Buat dan kelola jadwal latihan</p>
-                <a href="../modules/absen/index.php">Kelola Jadwal</a>
+                <a href="<?= BASE_URL ?>/modules/absen/index.php">Kelola Jadwal</a>
             </div>
 
             <div class="action-card">
                 <h3>Booking Acara</h3>
                 <p>Kelola pesanan manggung grup</p>
-                <a href="../modules/acara/index.php">Kelola Booking</a>
+                <a href="<?= BASE_URL ?>/modules/acara/index.php">Kelola Booking</a>
             </div>
 
             <div class="action-card">
                 <h3>Inventaris Alat</h3>
                 <p>Kelola alat musik dan inventaris</p>
-                <a href="../modules/alat/index.php">Kelola Alat</a>
+                <a href="<?= BASE_URL ?>/modules/alat/index.php">Kelola Alat</a>
             </div>
 
             <div class="action-card">
                 <h3>Keuangan</h3>
                 <p>Kelola laporan kas dan keuangan</p>
-                <a href="../modules/keuangan/index.php">Kelola Kas</a>
+                <a href="<?= BASE_URL ?>/modules/keuangan/index.php">Kelola Kas</a>
             </div>
         </div>
     </div>

@@ -40,7 +40,7 @@ function secure_logout() {
     }
 
     // 5. Redirect ke login dengan pesan
-    header('Location: login.php?logout=success');
+    header('Location: /hadrahin/auth/login.php?logout=success');
     exit;
 }
 
