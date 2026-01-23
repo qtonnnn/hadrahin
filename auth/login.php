@@ -1,10 +1,15 @@
 <?php
 // Konfigurasi error yang aman untuk production
-// Matikan display_errors untuk keamanan, gunakan logging
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', '../../logs/php_errors.log');
+
+// Tentukan BASE_URL jika belum ada
+if (!defined('BASE_URL')) {
+    $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/hadrahin';
+    define('BASE_URL', $base_url);
+}
 
 session_start();
 
@@ -19,11 +24,11 @@ $is_blocked = $rate_limit['blocked'];
 if (isset($_SESSION['user_id'])) {
     $peran = $_SESSION['peran'];
     if ($peran === 'admin') {
-        header('Location: ../dashboard/admin.php');
+        header('Location: ' . BASE_URL . '/dashboard/admin.php');
     } elseif ($peran === 'pembina') {
-        header('Location: ../dashboard/pembina.php');
+        header('Location: ' . BASE_URL . '/dashboard/pembina.php');
     } else {
-        header('Location: ../dashboard/anggota.php');
+        header('Location: ' . BASE_URL . '/dashboard/anggota.php');
     }
     exit;
 }
@@ -56,43 +61,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once '../config/database.php';
 
             try {
-                // Query untuk mencari user
-                $query = "SELECT * FROM user WHERE username = ? AND status_aktif = 1";
+                // Query untuk mencari user (tanpa filter status_aktif)
+                $query = "SELECT * FROM user WHERE username = ?";
                 $stmt = $pdo->prepare($query);
                 $stmt->execute([$username]);
 
-if ($stmt->rowCount() === 1) {
-                $user = $stmt->fetch();
+                if ($stmt->rowCount() === 1) {
+                    $user = $stmt->fetch();
 
-// Verifikasi password
-                if (password_verify($password, $user['password'])) {
-                    // Login BERHASIL - reset rate limit
-                    reset_rate_limit();
-                    
-                    // Login berhasil
-                    $_SESSION['user_id'] = $user['id_user'];
-                    $_SESSION['username'] = $user['username'];
-                    $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
-                    $_SESSION['peran'] = $user['peran'];
-
-                    // Redirect berdasarkan peran
-                    $peran = $user['peran'];
-                    if ($peran === 'admin') {
-                        header('Location: ../dashboard/admin.php');
-                    } elseif ($peran === 'pembina') {
-                        header('Location: ../dashboard/pembina.php');
-                    } else {
-                        header('Location: ../dashboard/anggota.php');
+                    // Cek apakah akun non-aktif
+                    if ($user['status_aktif'] == 0) {
+                        $error = 'Akun ini telah dinonaktifkan. Silakan hubungi administrator untuk mengaktifkan kembali akun Anda.';
                     }
-                    exit;
+                    // Verifikasi password
+                    elseif (password_verify($password, $user['password'])) {
+                        // Login BERHASIL - reset rate limit
+                        reset_rate_limit();
+                        
+                        // Login berhasil
+                        $_SESSION['user_id'] = $user['id_user'];
+                        $_SESSION['username'] = $user['username'];
+                        $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
+                        $_SESSION['peran'] = $user['peran'];
+
+                        // Redirect berdasarkan peran
+                        $peran = $user['peran'];
+                        if ($peran === 'admin') {
+                            header('Location: ' . BASE_URL . '/dashboard/admin.php');
+                        } elseif ($peran === 'pembina') {
+                            header('Location: ' . BASE_URL . '/dashboard/pembina.php');
+                        } else {
+                            header('Location: ' . BASE_URL . '/dashboard/anggota.php');
+                        }
+                        exit;
+                    } else {
+                        // Login gagal - catat percobaan
+                        record_failed_attempt();
+                        $error = 'Password yang Anda masukkan salah!';
+                    }
                 } else {
-                    // Login gagal - catat percobaan
-                    record_failed_attempt();
-                    $error = 'Password yang Anda masukkan salah!';
+                    $error = 'Username tidak ditemukan!';
                 }
-            } else {
-                $error = 'Username tidak ditemukan atau akun tidak aktif!';
-            }
         } catch (PDOException $e) {
             // Log error detail, tampilkan pesan generik ke user
             error_log("Login DB Error: " . $e->getMessage());
@@ -108,7 +117,7 @@ if ($stmt->rowCount() === 1) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Hadrah</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
     <style>
         * {
             margin: 0;
@@ -273,6 +282,30 @@ if ($stmt->rowCount() === 1) {
             border-color: #cfc;
         }
 
+        /* Style khusus untuk akun non-aktif */
+        .error-message.inactive-account {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffc107 100%);
+            color: #856404;
+            border-color: #ffc107;
+        }
+
+        .error-message.inactive-account h4 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .error-message.inactive-account p {
+            margin-bottom: 8px;
+        }
+
+        .error-message.inactive-account .contact-info {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #856404;
+        }
+
         /* Rate limit countdown styles */
         .rate-limit-message {
             background: linear-gradient(135deg, #fff3cd 0%, #ffc107 100%);
@@ -352,6 +385,17 @@ if ($stmt->rowCount() === 1) {
                 <p class="countdown-label">Silakan tunggu:</p>
                 <div id="countdown-timer" class="countdown-timer">Loading...</div>
                 <p class="countdown-label">Halaman akan otomatis refresh setelah waktu habis</p>
+            </div>
+            <?php elseif (strpos($error, 'telah dinonaktifkan') !== false): ?>
+            <!-- Tampilan khusus untuk akun non-aktif -->
+            <div class="error-message inactive-account">
+                <h4>🚫 Akun Non-Aktif</h4>
+                <p><?= htmlspecialchars($error) ?></p>
+                <div class="contact-info">
+                    <strong>Hubungi Administrator:</strong><br>
+                    📧 Email: admin@hadrah.com<br>
+                    📱 Silakan hubungi admin untuk mengaktifkan akun Anda
+                </div>
             </div>
             <?php else: ?>
             <div class="error-message">

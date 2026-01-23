@@ -19,6 +19,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Include database connection
+require_once __DIR__ . '/../config/database.php';
+
 /**
  * Fungsi: Cek apakah user sudah login
  * Jika belum, redirect ke halaman login
