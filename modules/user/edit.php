@@ -42,7 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
     $no_hp = trim($_POST['no_hp'] ?? '');
     $peran = $_POST['peran'] ?? 'anggota';
-    $status_aktif = isset($_POST['status_aktif']) ? 1 : 0;
+    // Use hidden input value when checkbox is disabled, otherwise use checkbox value
+    $status_aktif = isset($_POST['status_aktif']) ? (int)$_POST['status_aktif'] : 
+                   (isset($_POST['status_aktif_checkbox']) ? 1 : 0);
 
     $errors = [];
 
@@ -201,7 +203,9 @@ include '../../includes/header_with_sidebar.php';
 
                     <div class="mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="status_aktif" name="status_aktif" 
+                            <input type="hidden" name="status_aktif" value="<?= $user['status_aktif'] ?>">
+                            <input class="form-check-input" type="checkbox" id="status_aktif" name="status_aktif_checkbox" 
+                                   value="1"
                                    <?= $user['status_aktif'] ? 'checked' : '' ?>
                                    <?= $isOnlyAdmin ? 'disabled' : '' ?>>
                             <label class="form-check-label" for="status_aktif">
