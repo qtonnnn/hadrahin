@@ -39,8 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Nama lengkap wajib diisi!";
     }
 
-    // Validate phone number format (optional, Indonesia format)
-    if (!empty($no_hp) && !preg_match('/^[0-9]{10,15}$/', $no_hp)) {
+    // Phone number is required for pembina and anggota, optional for admin
+    if (in_array($peran, ['pembina', 'anggota']) && empty($no_hp)) {
+        $errors[] = "Nomor HP wajib diisi untuk Peran Pembina/Anggota!";
+    } elseif (!empty($no_hp) && !preg_match('/^[0-9]{10,15}$/', $no_hp)) {
         $errors[] = "Nomor HP harus berupa angka (10-15 digit)!";
     }
 
@@ -133,14 +135,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="mb-3">
-                        <label for="no_hp" class="form-label">Nomor Handphone</label>
+                        <label for="no_hp" class="form-label">Nomor Handphone <span id="no_hp_required" class="text-danger" style="display:none">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-phone"></i></span>
                             <input type="tel" class="form-control" id="no_hp" name="no_hp" 
                                    value="<?= htmlspecialchars($_POST['no_hp'] ?? '') ?>" 
                                    placeholder="Masukkan nomor HP (contoh: 081234567890)" maxlength="15">
                         </div>
-                        <div class="form-text">Format: 10-15 digit angka (contoh: 081234567890)</div>
+                        <div class="form-text" id="no_hp_help">Format: 10-15 digit angka (contoh: 081234567890). Wajib untuk Peran Pembina/Anggota.</div>
                     </div>
 
                     <div class="mb-3">
@@ -369,29 +371,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
 
         // Phone number format validation
-        noHpInput.addEventListener('input', function() {
-            const noHp = this.value;
-            if (noHp.length === 0) {
-                return clearError(this);
+        function validateNoHp() {
+            const noHp = noHpInput.value;
+            const peran = document.getElementById('peran').value;
+            
+            // Check if phone is required for this role
+            const isRequired = ['pembina', 'anggota'].includes(peran);
+            
+            if (!isRequired && noHp.length === 0) {
+                return clearError(noHpInput);
             }
+            
+            if (isRequired && noHp.length === 0) {
+                return showError(noHpInput, 'Nomor HP wajib diisi untuk Peran Pembina/Anggota!');
+            }
+            
             if (!/^[0-9]*$/.test(noHp)) {
-                return showError(this, 'Nomor HP hanya boleh berisi angka!');
+                return showError(noHpInput, 'Nomor HP hanya boleh berisi angka!');
             }
             if (noHp.length > 0 && noHp.length < 10) {
-                return showError(this, 'Nomor HP minimal 10 digit!');
+                return showError(noHpInput, 'Nomor HP minimal 10 digit!');
             }
             if (noHp.length > 15) {
                 // Truncate to 15 digits
-                this.value = noHp.slice(0, 15);
-                return showError(this, 'Nomor HP maksimal 15 digit!');
+                noHpInput.value = noHp.slice(0, 15);
+                return showError(noHpInput, 'Nomor HP maksimal 15 digit!');
             }
-            return clearError(this);
-        });
+            return clearError(noHpInput);
+        }
+
+        noHpInput.addEventListener('input', validateNoHp);
 
         // Phone number blur - check uniqueness
         noHpInput.addEventListener('blur', function() {
             const noHp = this.value;
-            if (noHp.length >= 10 && noHp.length <= 15) {
+            const peran = document.getElementById('peran').value;
+            const isRequired = ['pembina', 'anggota'].includes(peran);
+            
+            if ((isRequired && noHp.length >= 10) || (!isRequired && noHp.length >= 10)) {
                 fetch('../../api/check_no_hp.php?no_hp=' + encodeURIComponent(noHp))
                     .then(response => response.json())
                     .then(data => {
@@ -404,7 +421,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     .catch(() => {
                         // Silently fail - server-side will catch it
                     });
+            } else if (isRequired && noHp.length > 0 && noHp.length < 10) {
+                showError(this, 'Nomor HP minimal 10 digit!');
             }
+        });
+
+        // Validate phone when role changes
+        document.getElementById('peran').addEventListener('change', function() {
+            const isRequired = ['pembina', 'anggota'].includes(this.value);
+            
+            // Show/hide required indicator
+            document.getElementById('no_hp_required').style.display = isRequired ? 'inline' : 'none';
+            
+            if (isRequired) {
+                validateNoHp();
+            } else {
+                clearError(noHpInput);
+            }
+        });
+
+        // Initialize required indicator on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const peran = document.getElementById('peran').value;
+            const isRequired = ['pembina', 'anggota'].includes(peran);
+            document.getElementById('no_hp_required').style.display = isRequired ? 'inline' : 'none';
         });
 
         // Password validation
