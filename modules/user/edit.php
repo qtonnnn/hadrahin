@@ -201,22 +201,17 @@ include '../../includes/header_with_sidebar.php';
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="form-check">
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
                             <input type="hidden" name="status_aktif" value="<?= $user['status_aktif'] ?>">
                             <input class="form-check-input" type="checkbox" id="status_aktif" name="status_aktif_checkbox" 
                                    value="1"
                                    <?= $user['status_aktif'] ? 'checked' : '' ?>
                                    <?= $isOnlyAdmin ? 'disabled' : '' ?>>
-                            <label class="form-check-label" for="status_aktif">
-                                <span class="badge <?= $user['status_aktif'] ? 'bg-success' : 'bg-secondary' ?>" id="statusBadge">
-                                    <?= $user['status_aktif'] ? 'Aktif' : 'Tidak Aktif' ?>
-                                </span>
-                                Akun aktif
-                            </label>
+                            <label class="form-check-label" for="status_aktif">User Aktif</label>
                         </div>
                         <?php if ($isOnlyAdmin): ?>
-                            <div class="form-text text-warning">
+                            <div class="form-text text-warning mt-2">
                                 <i class="fas fa-exclamation-triangle me-1"></i>
                                 Tidak dapat menonaktifkan akun karena ini adalah satu-satunya admin aktif di sistem.
                             </div>
@@ -338,22 +333,6 @@ document.querySelectorAll('.toggle-password').forEach(button => {
     });
 });
 
-// Status aktif checkbox handler
-const statusAktifCheckbox = document.getElementById('status_aktif');
-const statusBadge = document.getElementById('statusBadge');
-
-if (statusAktifCheckbox && statusBadge) {
-    statusAktifCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            statusBadge.textContent = 'Aktif';
-            statusBadge.className = 'badge bg-success';
-        } else {
-            statusBadge.textContent = 'Tidak Aktif';
-            statusBadge.className = 'badge bg-secondary';
-        }
-    });
-}
-
 // Show confirmation modal
 function showConfirmModal() {
     const username = document.getElementById('username').value.trim() || '-';
@@ -362,7 +341,7 @@ function showConfirmModal() {
     const peranSelect = document.getElementById('peran');
     const peranText = peranSelect.options[peranSelect.selectedIndex].text;
     const password = document.getElementById('password').value;
-    const statusAktif = statusAktifCheckbox.checked;
+    const statusAktif = document.getElementById('status_aktif').checked;
     
     document.getElementById('confirmUsername').textContent = username;
     document.getElementById('confirmNama').textContent = namaLengkap;
