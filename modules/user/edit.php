@@ -26,6 +26,14 @@ if (!$user) {
     exit;
 }
 
+// Count total active admin users
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM user WHERE peran = 'admin' AND status_aktif = 1");
+$stmt->execute();
+$activeAdminCount = $stmt->fetchColumn();
+
+// Check if this is the only admin
+$isOnlyAdmin = ($user['peran'] === 'admin' && $user['status_aktif'] == 1 && $activeAdminCount <= 1);
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
@@ -194,14 +202,21 @@ include '../../includes/header_with_sidebar.php';
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="status_aktif" name="status_aktif" 
-                                   <?= $user['status_aktif'] ? 'checked' : '' ?>>
+                                   <?= $user['status_aktif'] ? 'checked' : '' ?>
+                                   <?= $isOnlyAdmin ? 'disabled' : '' ?>>
                             <label class="form-check-label" for="status_aktif">
-                                <span class="badge <?= $user['status_aktif'] ? 'bg-success' : 'bg-secondary' ?>">
+                                <span class="badge <?= $user['status_aktif'] ? 'bg-success' : 'bg-secondary' ?>" id="statusBadge">
                                     <?= $user['status_aktif'] ? 'Aktif' : 'Tidak Aktif' ?>
                                 </span>
                                 Akun aktif
                             </label>
                         </div>
+                        <?php if ($isOnlyAdmin): ?>
+                            <div class="form-text text-warning">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                Tidak dapat menonaktifkan akun karena ini adalah satu-satunya admin aktif di sistem.
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <hr class="my-4">
@@ -319,6 +334,22 @@ document.querySelectorAll('.toggle-password').forEach(button => {
     });
 });
 
+// Status aktif checkbox handler
+const statusAktifCheckbox = document.getElementById('status_aktif');
+const statusBadge = document.getElementById('statusBadge');
+
+if (statusAktifCheckbox && statusBadge) {
+    statusAktifCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            statusBadge.textContent = 'Aktif';
+            statusBadge.className = 'badge bg-success';
+        } else {
+            statusBadge.textContent = 'Tidak Aktif';
+            statusBadge.className = 'badge bg-secondary';
+        }
+    });
+}
+
 // Show confirmation modal
 function showConfirmModal() {
     const username = document.getElementById('username').value.trim() || '-';
@@ -327,7 +358,7 @@ function showConfirmModal() {
     const peranSelect = document.getElementById('peran');
     const peranText = peranSelect.options[peranSelect.selectedIndex].text;
     const password = document.getElementById('password').value;
-    const statusAktif = document.getElementById('status_aktif').checked;
+    const statusAktif = statusAktifCheckbox.checked;
     
     document.getElementById('confirmUsername').textContent = username;
     document.getElementById('confirmNama').textContent = namaLengkap;
