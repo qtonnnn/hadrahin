@@ -94,25 +94,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include '../../includes/header.php'; ?>
     
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0"><i class="fas fa-user-plus me-2"></i><?= $page_title ?></h2>
-            <a href="index.php" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Kembali</a>
-        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex align-items-center">
+                            <a href="index.php" class="btn btn-outline-secondary me-3">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                            <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i><?= $page_title ?></h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($errors)): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <ul class="mb-0">
+                                    <?php foreach ($errors as $error): ?>
+                                        <li><?= htmlspecialchars($error) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        <?php endif; ?>
 
-        <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0">
-                    <?php foreach ($errors as $error): ?>
-                        <li><?= htmlspecialchars($error) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
-
-        <div class="card shadow-sm border-0" style="max-width: 600px;">
-            <div class="card-body">
-                <form method="POST" autocomplete="off">
+                        <form method="POST" autocomplete="off">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
                         <div class="input-group">
@@ -193,7 +198,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" class="btn btn-primary btn-lg" onclick="showConfirmModal()">
                             <i class="fas fa-save me-1"></i> Simpan
                         </button>
-                        <a href="index.php" class="btn btn-outline-secondary">Batal</a>
+                        <a href="index.php" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i> Batal
+                        </a>
                     </div>
                 </form>
             </div>
