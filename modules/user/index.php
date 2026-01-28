@@ -20,8 +20,10 @@ $limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-// Search
+// Search dengan Validasi
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search = htmlspecialchars(strip_tags($search), ENT_QUOTES, 'UTF-8');
+if (strlen($search) > 100) $search = substr($search, 0, 100);
 
 // Count total users
 if ($search) {
@@ -55,7 +57,7 @@ if (isset($_GET['hapus'])) {
 }
 
 // Include header dengan sidebar
-include '../../includes/header_with_sidebar.php';
+include '../../includes/header.php';
 ?>
 
 <!-- Floating Action Button -->
@@ -115,9 +117,10 @@ include '../../includes/header_with_sidebar.php';
         <form method="GET" class="d-flex search-form">
             <div class="input-group" style="max-width: 400px;">
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" name="search" class="form-control" 
-                       placeholder="Cari username atau nama lengkap..." 
-                       value="<?= htmlspecialchars($search) ?>">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Cari username atau nama lengkap..." 
+                               value="<?= htmlspecialchars($search) ?>"
+                               maxlength="100">
                 <?php if ($search): ?>
                     <a href="index.php" class="btn btn-outline-secondary">Reset</a>
                 <?php endif; ?>
@@ -286,5 +289,5 @@ include '../../includes/header_with_sidebar.php';
     </div>
 <?php endif; ?>
 
-<?php include '../../includes/footer_with_sidebar.php'; ?>
+<?php include '../../includes/footer.php'; ?>
 

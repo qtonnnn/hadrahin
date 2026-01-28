@@ -70,21 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Insert user
     if (empty($errors)) {
-        try {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO user (username, password, nama_lengkap, no_hp, peran, status_aktif) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$username, $hashed_password, $nama_lengkap, $no_hp, $peran, $status_aktif]);
-            
-            header('Location: index.php?msg=tambah_sukes');
-            exit;
-        } catch (PDOException $e) {
-            $errors[] = "Gagal menambahkan user: " . $e->getMessage();
-        }
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO user (username, password, nama_lengkap, no_hp, peran, status_aktif) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$username, $hashed_password, $nama_lengkap, $no_hp, $peran, $status_aktif]);
+        
+        header('Location: index.php?msg=tambah_sukes');
+        exit;
     }
 }
 
-// Include header dengan sidebar
-include '../../includes/header_with_sidebar.php';
+
+include '../../includes/header.php';
 ?>
 
 <!-- Error Messages -->
@@ -458,5 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include '../../includes/footer_with_sidebar.php'; ?>
+<?php include '../../includes/footer.php'; ?>
+
+
 

@@ -99,34 +99,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Jika tidak ada error, update data
     if (empty($errors)) {
-        try {
-            if (!empty($password)) {
-                // Update dengan password baru
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("UPDATE user SET username = ?, password = ?, nama_lengkap = ?, no_hp = ?, peran = ?, status_aktif = ? WHERE id_user = ?");
-                $stmt->execute([$username, $hashed_password, $nama_lengkap, $no_hp, $peran, $status_aktif, $id]);
-            } else {
-                // Update tanpa password
-                $stmt = $pdo->prepare("UPDATE user SET username = ?, nama_lengkap = ?, no_hp = ?, peran = ?, status_aktif = ? WHERE id_user = ?");
-                $stmt->execute([$username, $nama_lengkap, $no_hp, $peran, $status_aktif, $id]);
-            }
-            
-            // Update session jika user yang diedit adalah user yang sedang login
-            if ($id == $_SESSION['user_id']) {
-                $_SESSION['nama_lengkap'] = $nama_lengkap;
-                $_SESSION['peran'] = $peran;
-            }
-            
-            header('Location: index.php?msg=edit_sukes');
-            exit;
-        } catch (PDOException $e) {
-            $errors[] = "Gagal mengupdate user: " . $e->getMessage();
+        if (!empty($password)) {
+            // Update dengan password baru
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("UPDATE user SET username = ?, password = ?, nama_lengkap = ?, no_hp = ?, peran = ?, status_aktif = ? WHERE id_user = ?");
+            $stmt->execute([$username, $hashed_password, $nama_lengkap, $no_hp, $peran, $status_aktif, $id]);
+        } else {
+            // Update tanpa password
+            $stmt = $pdo->prepare("UPDATE user SET username = ?, nama_lengkap = ?, no_hp = ?, peran = ?, status_aktif = ? WHERE id_user = ?");
+            $stmt->execute([$username, $nama_lengkap, $no_hp, $peran, $status_aktif, $id]);
         }
+        
+        // Update session jika user yang diedit adalah user yang sedang login
+        if ($id == $_SESSION['user_id']) {
+            $_SESSION['nama_lengkap'] = $nama_lengkap;
+            $_SESSION['peran'] = $peran;
+        }
+        
+        header('Location: index.php?msg=edit_sukes');
+        exit;
     }
 }
 
 // Include header dengan sidebar
-include '../../includes/header_with_sidebar.php';
+include '../../includes/header.php';
 ?>
 
 <!-- Error Messages -->
@@ -527,5 +523,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include '../../includes/footer_with_sidebar.php'; ?>
+<?php include '../../includes/footer.php'; ?></new_str
 

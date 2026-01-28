@@ -1,9 +1,12 @@
 <?php
-// Konfigurasi error yang aman untuk production
+/**
+ * Login Page dengan Comprehensive Error Handling
+ */
+
+// Nonaktifkan display_errors untuk production
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
-ini_set('error_log', '../../logs/php_errors.log');
 
 // Tentukan BASE_URL jika belum ada
 if (!defined('BASE_URL')) {
@@ -11,6 +14,10 @@ if (!defined('BASE_URL')) {
     define('BASE_URL', $base_url);
 }
 
+// Load error handler dan custom exceptions
+require_once '../includes/error_handler.php';
+
+// Start session SEBELUM require rate_limit
 session_start();
 
 // Include rate limiting
@@ -34,80 +41,107 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $error = '';
+$error_type = 'general'; // general, inactive, rate_limit
 
 // Proses login jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Jika sedang diblokir, cek lagi apakah sudah melewati waktu blokir
-    if ($is_blocked) {
-        // Cek rate limit lagi untuk memastikan masih diblokir
-        $check_again = check_rate_limit();
-        if ($check_again['blocked']) {
-            $error = $check_again['message'];
-            // Tampilkan halaman dengan pesan error, JANGAN proses login
-        } else {
-            // Blokir sudah habis, lanjutkan proses login
-            $is_blocked = false;
+    try {
+        // Jika sedang diblokir, cek lagi apakah sudah melewati waktu blokir
+        if ($is_blocked) {
+            $check_again = check_rate_limit();
+            if ($check_again['blocked']) {
+                throw new RateLimitException(
+                    "Terlalu banyak percobaan login gagal",
+                    $check_again['message']
+                );
+            } else {
+                $is_blocked = false;
+            }
         }
-    }
-    
-    if (!$is_blocked && empty($error)) {
+        
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
-
+        
+        // Validasi input kosong
         if (empty($username) || empty($password)) {
-            $error = 'Username dan password harus diisi!';
-        } else {
-            // Koneksi ke database menggunakan PDO
-            require_once '../config/database.php';
-
-            try {
-                // Query untuk mencari user (tanpa filter status_aktif)
-                $query = "SELECT * FROM user WHERE username = ?";
-                $stmt = $pdo->prepare($query);
-                $stmt->execute([$username]);
-
-                if ($stmt->rowCount() === 1) {
-                    $user = $stmt->fetch();
-
-                    // Cek apakah akun non-aktif
-                    if ($user['status_aktif'] == 0) {
-                        $error = 'Akun ini telah dinonaktifkan. Silakan hubungi administrator untuk mengaktifkan kembali akun Anda.';
-                    }
-                    // Verifikasi password
-                    elseif (password_verify($password, $user['password'])) {
-                        // Login BERHASIL - reset rate limit
-                        reset_rate_limit();
-                        
-                        // Login berhasil
-                        $_SESSION['user_id'] = $user['id_user'];
-                        $_SESSION['username'] = $user['username'];
-                        $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
-                        $_SESSION['peran'] = $user['peran'];
-
-                        // Redirect berdasarkan peran
-                        $peran = $user['peran'];
-                        if ($peran === 'admin') {
-                            header('Location: ' . BASE_URL . '/dashboard/admin.php');
-                        } elseif ($peran === 'pembina') {
-                            header('Location: ' . BASE_URL . '/dashboard/pembina.php');
-                        } else {
-                            header('Location: ' . BASE_URL . '/dashboard/anggota.php');
-                        }
-                        exit;
-                    } else {
-                        // Login gagal - catat percobaan
-                        record_failed_attempt();
-                        $error = 'Password yang Anda masukkan salah!';
-                    }
+            throw new ValidationException(
+                "Username dan password wajib diisi",
+                "Username dan password harus diisi!"
+            );
+        }
+        
+        // Koneksi ke database menggunakan PDO
+        require_once '../config/database.php';
+        
+        // Query untuk mencari user
+        $query = "SELECT * FROM user WHERE username = ?";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$username]);
+        
+        if ($stmt->rowCount() === 1) {
+            $user = $stmt->fetch();
+            
+            // Cek apakah akun non-aktif
+            if ($user['status_aktif'] == 0) {
+                throw new AuthorizationException(
+                    "Akun non-aktif: {$username}",
+                    "Akun ini telah dinonaktifkan. Silakan hubungi administrator."
+                );
+            }
+            
+            // Verifikasi password
+            if (password_verify($password, $user['password'])) {
+                // Login BERHASIL - reset rate limit
+                reset_rate_limit();
+                
+                // Set session
+                $_SESSION['user_id'] = $user['id_user'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
+                $_SESSION['peran'] = $user['peran'];
+                
+                // Redirect berdasarkan peran
+                $peran = $user['peran'];
+                if ($peran === 'admin') {
+                    header('Location: ' . BASE_URL . '/dashboard/admin.php');
+                } elseif ($peran === 'pembina') {
+                    header('Location: ' . BASE_URL . '/dashboard/pembina.php');
                 } else {
-                    $error = 'Username tidak ditemukan!';
+                    header('Location: ' . BASE_URL . '/dashboard/anggota.php');
                 }
-        } catch (PDOException $e) {
-            // Log error detail, tampilkan pesan generik ke user
-            error_log("Login DB Error: " . $e->getMessage());
-            $error = 'Terjadi kesalahan sistem. Silakan coba lagi.';
+                exit;
+            } else {
+                // Login gagal - catat percobaan
+                record_failed_attempt();
+                throw new AuthenticationException(
+                    "Password salah untuk user: {$username}",
+                    "Password yang Anda masukkan salah!"
+                );
+            }
+        } else {
+            throw new AuthenticationException(
+                "User tidak ditemukan: {$username}",
+                "Username tidak ditemukan!"
+            );
         }
-        }
+        
+    } catch (RateLimitException $e) {
+        $error = $e->getUserMessage();
+        $error_type = 'rate_limit';
+        $rate_limit_data = $rate_limit;
+    } catch (ValidationException $e) {
+        $error = $e->getUserMessage();
+        $error_type = 'general';
+    } catch (AuthenticationException $e) {
+        $error = $e->getUserMessage();
+        $error_type = 'general';
+    } catch (AuthorizationException $e) {
+        $error = $e->getUserMessage();
+        $error_type = 'inactive';
+    } catch (PDOException $e) {
+        ErrorHandler::log("Login DB Error: " . $e->getMessage(), 'ERROR');
+        $error = 'Terjadi kesalahan sistem. Silakan coba lagi.';
+        $error_type = 'general';
     }
 }
 ?>
@@ -117,6 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Hadrah</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥁</text></svg>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
     <style>
         * {
