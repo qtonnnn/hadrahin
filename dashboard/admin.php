@@ -137,6 +137,57 @@ $stats['dresscode']['most_used'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $stmt = $pdo->query("SELECT id_dresscode, nama_pakaian, status, created_at FROM dresscode ORDER BY created_at DESC LIMIT 3");
 $recent_dresscode_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// ============================================
+// ALAT (INVENTORY) STATISTICS
+// ============================================
+
+// Total alat
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM alat");
+$stats['alat']['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Total kondisi baik
+$stmt = $pdo->query("SELECT COALESCE(SUM(jumlah_baik), 0) as total_baik FROM alat");
+$stats['alat']['total_baik'] = $stmt->fetch(PDO::FETCH_ASSOC)['total_baik'];
+
+// Total kondisi rusak
+$stmt = $pdo->query("SELECT COALESCE(SUM(jumlah_rusak), 0) as total_rusak FROM alat");
+$stats['alat']['total_rusak'] = $stmt->fetch(PDO::FETCH_ASSOC)['total_rusak'];
+
+// Total keseluruhan
+$stats['alat']['total_semua'] = $stats['alat']['total_baik'] + $stats['alat']['total_rusak'];
+$stats['alat']['persen_baik'] = $stats['alat']['total_semua'] > 0 ? round(($stats['alat']['total_baik'] / $stats['alat']['total_semua']) * 100) : 0;
+
+// Alat yang sedang dipinjam
+$stmt = $pdo->query("SELECT COUNT(*) as dipinjam FROM alat_pengguna WHERE status = 'aktif'");
+$stats['alat']['sedang_dipinjam'] = $stmt->fetch(PDO::FETCH_ASSOC)['dipinjam'];
+
+// Alat by condition for chart
+$stmt = $pdo->query("SELECT 
+                        SUM(jumlah_baik) as baik,
+                        SUM(jumlah_rusak) as rusak
+                     FROM alat");
+$alat_kondisi = $stmt->fetch(PDO::FETCH_ASSOC);
+$stats['alat']['kondisi'] = [
+    'baik' => (int)$alat_kondisi['baik'],
+    'rusak' => (int)$alat_kondisi['rusak']
+];
+
+// Most valuable alat (highest quantity)
+$stmt = $pdo->query("SELECT id_alat, nama_alat, (jumlah_baik + jumlah_rusak) as total_stok 
+                     FROM alat 
+                     ORDER BY total_stok DESC 
+                     LIMIT 3");
+$stats['alat']['most_stok'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Alat yang sering dipinjam
+$stmt = $pdo->query("SELECT a.id_alat, a.nama_alat, COUNT(ap.id_alat_pengguna) as total_dipinjam
+                     FROM alat a 
+                     LEFT JOIN alat_pengguna ap ON a.id_alat = ap.id_alat AND ap.status = 'aktif'
+                     GROUP BY a.id_alat 
+                     ORDER BY total_dipinjam DESC 
+                     LIMIT 3");
+$stats['alat']['sering_dipinjam'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Recent Activities
 $recent_activities = [];
 
@@ -1657,6 +1708,69 @@ body {
                         </div>
                     </div>
 
+                    <!-- Alat (Inventory) Statistics Widget -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #fd7e14 0%, #e55c00 100%);">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fas fa-music me-2"></i>
+                                            Statistik Inventaris Alat
+                                        </h5>
+                                        <a href="<?= BASE_URL ?>/modules/alat/index.php" class="btn btn-light btn-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i>Kelola
+                                        </a>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold"><?= $stats['alat']['total'] ?></div>
+                                                <small class="opacity-75">Jenis Alat</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-success">
+                                                    <i class="fas fa-check-circle"></i> <?= $stats['alat']['total_baik'] ?>
+                                                </div>
+                                                <small class="opacity-75">Kondisi Baik</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-danger">
+                                                    <i class="fas fa-times-circle"></i> <?= $stats['alat']['total_rusak'] ?>
+                                                </div>
+                                                <small class="opacity-75">Kondisi Rusak</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-warning">
+                                                    <i class="fas fa-hand-holding"></i> <?= $stats['alat']['sedang_dipinjam'] ?>
+                                                </div>
+                                                <small class="opacity-75">Sedang Dipinjam</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php if ($stats['alat']['total_semua'] > 0): ?>
+                                    <div class="mt-3">
+                                        <div class="d-flex justify-content-between text-white mb-1">
+                                            <small>Kondisi Baik Keseluruhan</small>
+                                            <small class="fw-bold"><?= $stats['alat']['persen_baik'] ?>%</small>
+                                        </div>
+                                        <div class="progress" style="height: 8px; opacity: 0.8;">
+                                            <div class="progress-bar bg-success" style="width: <?= $stats['alat']['persen_baik'] ?>%;"></div>
+                                            <div class="progress-bar bg-danger" style="width: <?= 100 - $stats['alat']['persen_baik'] ?>%;"></div>
+                                        </div>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Main Content Grid -->
                     <div class="row g-4">
                         <!-- Chart Section -->
@@ -2040,6 +2154,71 @@ body {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Alat (Inventory) Section -->
+                    <div class="row mt-4">
+                        <!-- Alat Distribution Chart -->
+                        <div class="col-md-6">
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-1">
+                                        <i class="fas fa-music me-2 text-warning"></i>
+                                        Kondisi Alat
+                                    </h5>
+                                    <p class="card-subtitle mb-0">Berdasarkan kondisi</p>
+                                </div>
+                                <div class="chart-container" style="height: 200px;">
+                                    <canvas id="alatDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alat dengan Stok Terbanyak -->
+                        <div class="col-md-6">
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-1">
+                                        <i class="fas fa-boxes me-2 text-success"></i>
+                                        Stok Alat Terbanyak
+                                    </h5>
+                                    <p class="card-subtitle mb-0">Inventaris berdasarkan jumlah</p>
+                                </div>
+                                <div class="p-3">
+                                    <?php if (empty($stats['alat']['most_stok'])): ?>
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fas fa-music fa-3x mb-3 d-block text-secondary"></i>
+                                            <p class="mb-0">Belum ada data alat</p>
+                                            <a href="<?= BASE_URL ?>/modules/alat/tambah.php" class="btn btn-primary mt-3">
+                                                <i class="fas fa-plus me-1"></i>Tambah Alat
+                                            </a>
+                                        </div>
+                                    <?php else: ?>
+                                        <?php foreach ($stats['alat']['most_stok'] as $i => $alat): ?>
+                                            <?php $total_stok = $alat['total_stok'] ?? 0; ?>
+                                            <div class="d-flex align-items-center mb-3 <?= $i === 0 ? '' : 'border-top pt-3' ?>">
+                                                <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                                    <i class="fas fa-music"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-bold"><?= htmlspecialchars($alat['nama_alat']) ?></div>
+                                                    <small class="text-muted">Total: <?= $total_stok ?> unit</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <div class="h5 mb-0 text-warning"><?= $total_stok ?></div>
+                                                    <small class="text-muted">unit</small>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <div class="text-center mt-3">
+                                            <a href="<?= BASE_URL ?>/modules/alat/index.php" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-list me-1"></i>Lihat Semua Alat
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
@@ -2225,6 +2404,44 @@ body {
                     backgroundColor: [
                         '#198754',
                         '#6c757d'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+        
+        // Alat (Inventory) Distribution Chart
+        const alatCtx = document.getElementById('alatDistributionChart').getContext('2d');
+        const alatData = <?php echo json_encode([
+            'Baik' => $stats['alat']['kondisi']['baik'],
+            'Rusak' => $stats['alat']['kondisi']['rusak']
+        ]); ?>;
+        
+        new Chart(alatCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(alatData),
+                datasets: [{
+                    data: Object.values(alatData),
+                    backgroundColor: [
+                        '#198754',
+                        '#dc3545'
                     ],
                     borderWidth: 0,
                     hoverOffset: 4
