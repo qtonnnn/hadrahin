@@ -1349,7 +1349,7 @@ body {
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="<?= BASE_URL ?>/modules/dresscode/index.php" class="nav-link">
                                     <i class="fas fa-tshirt"></i>
                                     <span>Dresscode</span>
                                 </a>
@@ -1654,7 +1654,7 @@ body {
                                             <i class="fas fa-boxes text-secondary"></i>
                                             <span>Stok Alat</span>
                                         </a>
-                                        <a href="#" class="quick-action-btn">
+                                        <a href="<?= BASE_URL ?>/modules/dresscode/index.php" class="quick-action-btn">
                                             <i class="fas fa-tshirt text-danger"></i>
                                             <span>Dresscode</span>
                                         </a>
