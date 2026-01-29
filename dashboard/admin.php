@@ -100,6 +100,43 @@ $query = "SELECT
 $stmt = $pdo->query($query);
 $stats['user_growth'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// ============================================
+// DRESSCODE STATISTICS
+// ============================================
+
+// Total dresscode
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM dresscode");
+$stats['dresscode']['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Dresscode aktif
+$stmt = $pdo->query("SELECT COUNT(*) as aktif FROM dresscode WHERE status = 'aktif'");
+$stats['dresscode']['aktif'] = $stmt->fetch(PDO::FETCH_ASSOC)['aktif'];
+
+// Dresscode nonaktif
+$stmt = $pdo->query("SELECT COUNT(*) as nonaktif FROM dresscode WHERE status = 'nonaktif'");
+$stats['dresscode']['nonaktif'] = $stmt->fetch(PDO::FETCH_ASSOC)['nonaktif'];
+
+// Dresscode yang digunakan di booking aktif
+$stmt = $pdo->query("SELECT COUNT(DISTINCT id_dresscode) FROM booking_acara WHERE status IN ('menunggu', 'diterima') AND id_dresscode IS NOT NULL");
+$stats['dresscode']['digunakan'] = $stmt->fetchColumn();
+
+// Dresscode by status for chart
+$stmt = $pdo->query("SELECT status, COUNT(*) as count FROM dresscode GROUP BY status");
+$stats['dresscode']['by_status'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Most used dresscode (by booking count)
+$stmt = $pdo->query("SELECT d.id_dresscode, d.nama_pakaian, d.warna, COUNT(b.id_booking) as penggunaan 
+                     FROM dresscode d 
+                     LEFT JOIN booking_acara b ON d.id_dresscode = b.id_dresscode 
+                     GROUP BY d.id_dresscode 
+                     ORDER BY penggunaan DESC 
+                     LIMIT 3");
+$stats['dresscode']['most_used'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Recent dresscode activities
+$stmt = $pdo->query("SELECT id_dresscode, nama_pakaian, status, created_at FROM dresscode ORDER BY created_at DESC LIMIT 3");
+$recent_dresscode_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Recent Activities
 $recent_activities = [];
 
@@ -1568,7 +1605,58 @@ body {
                             </div>
                         </div>
                     </div>
-                    
+
+                    <!-- Dresscode Statistics Widget -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fas fa-tshirt me-2"></i>
+                                            Statistik Dresscode
+                                        </h5>
+                                        <a href="<?= BASE_URL ?>/modules/dresscode/index.php" class="btn btn-light btn-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i>Kelola
+                                        </a>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold"><?= $stats['dresscode']['total'] ?></div>
+                                                <small class="opacity-75">Total Dresscode</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-success">
+                                                    <i class="fas fa-check"></i> <?= $stats['dresscode']['aktif'] ?>
+                                                </div>
+                                                <small class="opacity-75">Dresscode Aktif</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-warning">
+                                                    <i class="fas fa-pause"></i> <?= $stats['dresscode']['nonaktif'] ?>
+                                                </div>
+                                                <small class="opacity-75">Dresscode Nonaktif</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-info">
+                                                    <i class="fas fa-calendar-check"></i> <?= $stats['dresscode']['digunakan'] ?>
+                                                </div>
+                                                <small class="opacity-75">Digunakan di Acara</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Main Content Grid -->
                     <div class="row g-4">
                         <!-- Chart Section -->
@@ -1836,7 +1924,7 @@ body {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="chart-card">
                                 <div class="card-header">
@@ -1865,6 +1953,89 @@ body {
                                             <td class="text-end fw-bold"><?= $stats['total_users'] ?></td>
                                         </tr>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dresscode Section -->
+                    <div class="row mt-4">
+                        <!-- Dresscode Distribution Chart -->
+                        <div class="col-md-6">
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-1">
+                                        <i class="fas fa-tshirt me-2 text-primary"></i>
+                                        Distribusi Dresscode
+                                    </h5>
+                                    <p class="card-subtitle mb-0">Berdasarkan status</p>
+                                </div>
+                                <div class="chart-container" style="height: 200px;">
+                                    <canvas id="dresscodeDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Most Used Dresscode -->
+                        <div class="col-md-6">
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-1">
+                                        <i class="fas fa-star me-2 text-warning"></i>
+                                        Dresscode Populer
+                                    </h5>
+                                    <p class="card-subtitle mb-0">Paling sering digunakan</p>
+                                </div>
+                                <div class="p-3">
+                                    <?php if (empty($stats['dresscode']['most_used'])): ?>
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fas fa-tshirt fa-3x mb-3 d-block text-secondary"></i>
+                                            <p class="mb-0">Belum ada data dresscode</p>
+                                            <a href="<?= BASE_URL ?>/modules/dresscode/tambah.php" class="btn btn-primary mt-3">
+                                                <i class="fas fa-plus me-1"></i>Tambah Dresscode
+                                            </a>
+                                        </div>
+                                    <?php else: ?>
+                                        <?php foreach ($stats['dresscode']['most_used'] as $i => $dc): ?>
+                                            <?php
+                                            $penggunaan = $dc['penggunaan'] ?? 0;
+                                            $warna = $dc['warna'] ?: '#6c757d';
+                                            // Calculate text color for badge
+                                            $hex = ltrim($warna, '#');
+                                            if (strlen($hex) === 6) {
+                                                $r = hexdec(substr($hex, 0, 2));
+                                                $g = hexdec(substr($hex, 2, 2));
+                                                $b = hexdec(substr($hex, 4, 2));
+                                                $brightness = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+                                                $text_color = $brightness > 128 ? '#000000' : '#ffffff';
+                                            } else {
+                                                $text_color = '#000000';
+                                            }
+                                            ?>
+                                            <div class="d-flex align-items-center mb-3 <?= $i === 0 ? '' : 'border-top pt-3' ?>">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                                    <?= $i + 1 ?>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-bold"><?= htmlspecialchars($dc['nama_pakaian']) ?></div>
+                                                    <?php if ($dc['warna']): ?>
+                                                        <span class="badge" style="background-color: <?= $warna ?>; color: <?= $text_color ?>; border: 1px solid <?= $warna ?>;">
+                                                            <i class="fas fa-palette me-1"></i><?= htmlspecialchars($dc['warna']) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="text-end">
+                                                    <div class="h5 mb-0 text-primary"><?= $penggunaan ?></div>
+                                                    <small class="text-muted">penggunaan</small>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <div class="text-center mt-3">
+                                            <a href="<?= BASE_URL ?>/modules/dresscode/index.php" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-list me-1"></i>Lihat Semua Dresscode
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -2013,6 +2184,47 @@ body {
                         '#dc3545',
                         '#ffc107',
                         '#0d6efd'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+        
+        // Dresscode Distribution Chart
+        const dresscodeCtx = document.getElementById('dresscodeDistributionChart').getContext('2d');
+        const dresscodeData = <?php 
+            $dresscode_by_status = [];
+            foreach ($stats['dresscode']['by_status'] as $row) {
+                $dresscode_by_status[ucfirst($row['status'])] = (int)$row['count'];
+            }
+            echo json_encode($dresscode_by_status);
+        ?>;
+        
+        new Chart(dresscodeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(dresscodeData),
+                datasets: [{
+                    data: Object.values(dresscodeData),
+                    backgroundColor: [
+                        '#198754',
+                        '#6c757d'
                     ],
                     borderWidth: 0,
                     hoverOffset: 4
