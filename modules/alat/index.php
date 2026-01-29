@@ -15,12 +15,28 @@ require_once '../../config/database.php';
 
 $page_title = "Inventaris Alat";
 
+// Search dengan Validasi
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search = htmlspecialchars(strip_tags($search), ENT_QUOTES, 'UTF-8');
+if (strlen($search) > 100) $search = substr($search, 0, 100);
+
+// Build query dengan search
+$where_clause = '';
+$params = [];
+if ($search) {
+    $where_clause = "WHERE a.nama_alat LIKE ?";
+    $search_param = "%$search%";
+    $params = [$search_param];
+}
+
 // Get all alat with their pengguna
 $query = "SELECT a.*, 
           (SELECT COUNT(*) FROM alat_pengguna WHERE id_alat = a.id_alat AND status = 'aktif') as jumlah_pengguna
           FROM alat a 
+          $where_clause
           ORDER BY a.nama_alat ASC";
-$stmt = $pdo->query($query);
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
 $alat_list = $stmt->fetchAll();
 
 // Get pengguna for each alat
@@ -143,6 +159,31 @@ include '../../includes/header.php';
     <?php endif; ?>
 <?php endif; ?>
 
+<!-- Search Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="d-flex flex-wrap gap-2 align-items-end search-form">
+            <div class="input-group" style="max-width: 300px;">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Cari alat..." 
+                       value="<?= htmlspecialchars($search) ?>"
+                       maxlength="100">
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i>Cari
+                </button>
+                <?php if ($search): ?>
+                    <a href="index.php" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Reset
+                    </a>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Alat List - Card View for Mobile, Table for Desktop -->
 <div class="card">
     <div class="card-header py-3">
@@ -171,10 +212,15 @@ include '../../includes/header.php';
                         <tr>
                             <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="fas fa-music fa-3x mb-3 d-block text-secondary"></i>
-                                Belum ada data alat
+                                <?= $search ? 'Tidak ada alat yang ditemukan dengan kata kunci "' . htmlspecialchars($search) . '"' : 'Belum ada data alat' ?>
                                 <div class="mt-3">
+                                    <?php if ($search): ?>
+                                        <a href="index.php" class="btn btn-outline-secondary me-2">
+                                            <i class="fas fa-arrow-left me-1"></i>Kembali
+                                        </a>
+                                    <?php endif; ?>
                                     <a href="tambah.php" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus me-1"></i> Tambah Alat Pertama
+                                        <i class="fas fa-plus me-1"></i> Tambah Alat
                                     </a>
                                 </div>
                             </td>
