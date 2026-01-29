@@ -45,8 +45,8 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="<?= BASE_URL ?>/modules/acara/index.php" class="nav-link">
-                                    <i class="fas fa-calendar-alt"></i>
+                                <a href="<?= BASE_URL ?>/modules/acara/index.php" class="nav-link <?= isset($is_acara_module) && $is_acara_module ? 'active' : '' ?>">
+                                    <i class="fas fa-calendar-check"></i>
                                     <span>Booking Acara</span>
                                 </a>
                             </li>
@@ -69,7 +69,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="<?= BASE_URL ?>/modules/dresscode/index.php" class="nav-link">
+                                <a href="<?= BASE_URL ?>/modules/dresscode/index.php" class="nav-link <?= isset($is_dresscode_module) && $is_dresscode_module ? 'active' : '' ?>">
                                     <i class="fas fa-tshirt"></i>
                                     <span>Dresscode</span>
                                 </a>

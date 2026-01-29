@@ -167,6 +167,9 @@ include '../../includes/header.php';
     } elseif ($_GET['msg'] === 'access_denied') {
         $toastClass = 'bg-warning';
         $toastMessage = 'Anda tidak memiliki akses untuk operasi ini!';
+    } elseif ($_GET['msg'] === 'no_data') {
+        $toastClass = 'bg-info';
+        $toastMessage = 'Tidak ada data absensi untuk diekspor!';
     }
 
     if ($toastMessage):
@@ -266,9 +269,15 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Export Button -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Data Absensi Latihan</h5>
-    <a href="export.php?<?= http_build_query($_GET) ?>" class="btn btn-success">
-        <i class="fas fa-download me-2"></i>Export Excel
-    </a>
+    <?php if ($total_records > 0): ?>
+        <a href="export.php?<?= http_build_query($_GET) ?>" class="btn btn-success">
+            <i class="fas fa-download me-2"></i>Export Excel
+        </a>
+    <?php else: ?>
+        <button class="btn btn-secondary" disabled title="Tidak ada data untuk diekspor">
+            <i class="fas fa-download me-2"></i>Export Excel
+        </button>
+    <?php endif; ?>
 </div>
 
 <!-- Absensi List - Table View -->

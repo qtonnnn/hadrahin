@@ -102,9 +102,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all anggota - untuk absensi baru, tampilkan semua anggota tanpa ada yang terisi
-// Ini memastikan bahwa saat pertama kali membuka halaman absensi, tidak ada radio button yang tercentang
-$stmt = $pdo->query("SELECT id_user, nama_lengkap, username FROM user WHERE peran = 'anggota' AND status_aktif = 1 ORDER BY nama_lengkap");
+// Get search parameter for filtering anggota
+$search_anggota = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search_anggota = htmlspecialchars(strip_tags($search_anggota), ENT_QUOTES, 'UTF-8');
+if (strlen($search_anggota) > 100) $search_anggota = substr($search_anggota, 0, 100);
+
+// Get all anggota with optional search filter
+if (!empty($search_anggota)) {
+    $stmt = $pdo->prepare("SELECT id_user, nama_lengkap, username FROM user WHERE peran = 'anggota' AND status_aktif = 1 AND (nama_lengkap LIKE ? OR username LIKE ?) ORDER BY nama_lengkap");
+    $search_param = "%$search_anggota%";
+    $stmt->execute([$search_param, $search_param]);
+} else {
+    $stmt = $pdo->query("SELECT id_user, nama_lengkap, username FROM user WHERE peran = 'anggota' AND status_aktif = 1 ORDER BY nama_lengkap");
+}
 $anggotas = $stmt->fetchAll();
 
 // Kosongkan array status - semua anggota akan ditampilkan tanpa ada yang tercentang
@@ -198,31 +208,63 @@ include '../../includes/header.php';
 </div>
 
 <!-- Absensi Form -->
+<form method="GET" id="searchForm">
+    <input type="hidden" name="id" value="<?= $id_jadwal ?>">
+</form>
+
 <form method="POST" id="absensiForm">
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">
-                <i class="fas fa-users me-2"></i>
-                Daftar Anggota (<?= count($anggotas) ?> orang)
-            </h6>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-sm btn-outline-success" onclick="setAllStatus('hadir')">
-                    <i class="fas fa-check-circle me-1"></i>Hadir Semua
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-warning" onclick="setAllStatus('izin')">
-                    <i class="fas fa-exclamation-triangle me-1"></i>Izin Semua
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="setAllStatus('alpa')">
-                    <i class="fas fa-times-circle me-1"></i>Alpa Semua
-                </button>
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h6 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Daftar Anggota (<span id="totalAnggota"><?= count($anggotas) ?></span> orang)
+                </h6>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group" style="width: 250px;">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control form-control-sm" 
+                               name="search" placeholder="Cari nama..."
+                               value="<?= htmlspecialchars($search_anggota) ?>"
+                               form="searchForm">
+                        <?php if (!empty($search_anggota)): ?>
+                            <a href="?id=<?= $id_jadwal ?>" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-success" onclick="setAllStatus('hadir')">
+                            <i class="fas fa-check-circle me-1"></i>Hadir Semua
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="setAllStatus('izin')">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Izin Semua
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="setAllStatus('alpa')">
+                            <i class="fas fa-times-circle me-1"></i>Alpa Semua
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="card-body">
             <?php if (empty($anggotas)): ?>
                 <div class="text-center py-5 text-muted">
                     <i class="fas fa-users fa-3x mb-3 d-block text-secondary"></i>
-                    <h6>Tidak ada anggota yang terdaftar</h6>
-                    <p class="mb-0">Silakan tambahkan anggota terlebih dahulu.</p>
+                    <h6>
+                        <?php if (!empty($search_anggota)): ?>
+                            Tidak ada anggota ditemukan untuk "<strong><?= htmlspecialchars($search_anggota) ?></strong>"
+                        <?php else: ?>
+                            Tidak ada anggota yang terdaftar
+                        <?php endif; ?>
+                    </h6>
+                    <p class="mb-0">
+                        <?php if (!empty($search_anggota)): ?>
+                            <a href="?id=<?= $id_jadwal ?>" class="text-primary">Tampilkan semua anggota</a>
+                        <?php else: ?>
+                            Silakan tambahkan anggota terlebih dahulu.
+                        <?php endif; ?>
+                    </p>
                 </div>
             <?php else: ?>
                 <div class="row">
@@ -376,6 +418,20 @@ document.addEventListener('DOMContentLoaded', function() {
             updateCardStatus(this);
         });
     });
+
+    // Auto-submit search form on typing with debounce
+    const searchInput = document.querySelector('input[name="search"]');
+    const searchForm = document.getElementById('searchForm');
+    let debounceTimer;
+
+    if (searchInput && searchForm) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                searchForm.submit();
+            }, 500); // Wait 500ms after typing stops
+        });
+    }
 
     // Modal confirmation handling
     const saveButton = document.querySelector('button[data-bs-target="#konfirmasiModal"]');

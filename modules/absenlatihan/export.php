@@ -69,6 +69,20 @@ if (!empty($tanggal_mulai) && !empty($tanggal_selesai)) {
 
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
+// Count total records for export
+$count_sql = "SELECT COUNT(*) FROM absen_latihan a
+              JOIN jadwal_latihan j ON a.id_jadwal = j.id_jadwal
+              JOIN user u ON a.id_user = u.id_user $where_clause";
+$count_stmt = $pdo->prepare($count_sql);
+$count_stmt->execute($params);
+$total_records = $count_stmt->fetchColumn();
+
+// Check if there are records to export
+if ($total_records <= 0) {
+    header('Location: index.php?msg=no_data');
+    exit;
+}
+
 // Fetch all absensi data for export (no pagination)
 $sql = "SELECT a.*, j.tanggal, j.jam_mulai, j.lokasi, j.catatan, j.status as status_jadwal,
                u.nama_lengkap, u.username, u.peran, u.no_hp

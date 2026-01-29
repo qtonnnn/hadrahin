@@ -50,7 +50,25 @@ CREATE TABLE `alat` (
   `nama_alat` varchar(100) NOT NULL,
   `jumlah_baik` int(11) DEFAULT 0,
   `jumlah_rusak` int(11) DEFAULT 0,
-  `id_user` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alat_pengguna`
+--
+
+CREATE TABLE `alat_pengguna` (
+  `id_alat_pengguna` int(11) NOT NULL,
+  `id_alat` int(11) NOT NULL,
+  `id_user` int(11) NOT NULL,
+  `tanggal_diberikan` date NOT NULL,
+  `status` enum('aktif','dikembalikan') DEFAULT 'aktif',
+  `keterangan` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `user_modified` int(11) DEFAULT NULL,
@@ -197,8 +215,29 @@ ALTER TABLE `absen_latihan`
 -- Indexes for table `alat`
 --
 ALTER TABLE `alat`
-  ADD PRIMARY KEY (`id_alat`),
-  ADD KEY `fk_alat_user` (`id_user`);
+  ADD PRIMARY KEY (`id_alat`);
+
+--
+-- Indexes for table `alat_pengguna`
+--
+ALTER TABLE `alat_pengguna`
+  ADD PRIMARY KEY (`id_alat_pengguna`),
+  ADD KEY `fk_alatp_alat` (`id_alat`),
+  ADD KEY `fk_alatp_user` (`id_user`),
+  ADD UNIQUE KEY `uniq_alat_user` (`id_alat`, `id_user`, `status`);
+
+--
+-- AUTO_INCREMENT for table `alat_pengguna`
+--
+ALTER TABLE `alat_pengguna`
+  MODIFY `id_alat_pengguna` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for table `alat_pengguna`
+--
+ALTER TABLE `alat_pengguna`
+  ADD CONSTRAINT `fk_alatp_alat` FOREIGN KEY (`id_alat`) REFERENCES `alat` (`id_alat`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_alatp_user` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE CASCADE;
 
 --
 -- Indexes for table `booking_acara`
@@ -313,8 +352,7 @@ ALTER TABLE `absen_latihan`
 --
 -- Constraints for table `alat`
 --
-ALTER TABLE `alat`
-  ADD CONSTRAINT `fk_alat_user` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE SET NULL;
+-- Catatan: Relasi alat-pengguna sekarang ada di tabel `alat_pengguna`
 
 --
 -- Constraints for table `booking_acara`

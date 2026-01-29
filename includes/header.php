@@ -29,6 +29,10 @@ $current_path = $_SERVER['PHP_SELF'];
 $is_user_module = strpos($current_path, '/modules/user/') !== false;
 $is_jadwallatihan_module = strpos($current_path, '/modules/jadwallatihan/') !== false;
 $is_absenlatihan_module = strpos($current_path, '/modules/absenlatihan/') !== false;
+$is_dresscode_module = strpos($current_path, '/modules/dresscode/') !== false;
+$is_keuangan_module = strpos($current_path, '/modules/keuangan/') !== false;
+$is_alat_module = strpos($current_path, '/modules/alat/') !== false;
+$is_acara_module = strpos($current_path, '/modules/acara/') !== false;
 $is_profil_page = $current_page === 'edit' && $is_user_module && isset($_GET['id']) && $_GET['id'] == $user_id;
 
 $page_titles = [
