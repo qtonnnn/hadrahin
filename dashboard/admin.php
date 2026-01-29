@@ -1425,7 +1425,7 @@ body {
                         <div class="nav-section-title">Manajemen</div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="<?= BASE_URL ?>/modules/alat/index.php" class="nav-link">
                                     <i class="fas fa-music"></i>
                                     <span>Inventaris Alat</span>
                                 </a>
@@ -1852,7 +1852,7 @@ body {
                                             <i class="fas fa-file-invoice-dollar text-warning"></i>
                                             <span>Input Kas</span>
                                         </a>
-                                        <a href="#" class="quick-action-btn">
+                                        <a href="<?= BASE_URL ?>/modules/alat/index.php" class="quick-action-btn">
                                             <i class="fas fa-boxes text-secondary"></i>
                                             <span>Stok Alat</span>
                                         </a>
