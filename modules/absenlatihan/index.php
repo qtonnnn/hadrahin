@@ -270,15 +270,53 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Data Absensi Latihan</h5>
     <?php if ($total_records > 0): ?>
-        <a href="export.php?<?= http_build_query($_GET) ?>" class="btn btn-success">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exportModal">
             <i class="fas fa-download me-2"></i>Export Excel
-        </a>
+        </button>
     <?php else: ?>
         <button class="btn btn-secondary" disabled title="Tidak ada data untuk diekspor">
             <i class="fas fa-download me-2"></i>Export Excel
         </button>
     <?php endif; ?>
 </div>
+
+<!-- Export Confirmation Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">
+                    <i class="fas fa-file-excel me-2 text-success"></i>Konfirmasi Export Data
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Apakah Anda yakin ingin mengekspor data absensi latihan?</p>
+                <small class="text-muted">File Excel akan diunduh dengan filter yang sedang aktif.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Batal
+                </button>
+                <a href="export.php?<?= http_build_query($_GET) ?>" id="confirmExportBtn" class="btn btn-success" onclick="closeModalAndExport(this.href); return false;">
+                    <i class="fas fa-check me-2"></i>Ya, Export
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function closeModalAndExport(url) {
+    var modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+    if (modal) {
+        modal.hide();
+    }
+    setTimeout(function() {
+        window.location.href = url;
+    }, 300);
+}
+</script>
 
 <!-- Absensi List - Table View -->
 <div class="card">

@@ -157,10 +157,6 @@ $stats['alat']['total_rusak'] = $stmt->fetch(PDO::FETCH_ASSOC)['total_rusak'];
 $stats['alat']['total_semua'] = $stats['alat']['total_baik'] + $stats['alat']['total_rusak'];
 $stats['alat']['persen_baik'] = $stats['alat']['total_semua'] > 0 ? round(($stats['alat']['total_baik'] / $stats['alat']['total_semua']) * 100) : 0;
 
-// Alat yang sedang dipinjam
-$stmt = $pdo->query("SELECT COUNT(*) as dipinjam FROM alat_pengguna WHERE status = 'aktif'");
-$stats['alat']['sedang_dipinjam'] = $stmt->fetch(PDO::FETCH_ASSOC)['dipinjam'];
-
 // Alat by condition for chart
 $stmt = $pdo->query("SELECT 
                         SUM(jumlah_baik) as baik,
@@ -1747,10 +1743,10 @@ body {
                                         </div>
                                         <div class="col-md-3 col-6">
                                             <div class="text-center text-white">
-                                                <div class="h2 mb-0 fw-bold text-warning">
-                                                    <i class="fas fa-hand-holding"></i> <?= $stats['alat']['sedang_dipinjam'] ?>
+                                                <div class="h2 mb-0 fw-bold text-white">
+                                                    <i class="fas fa-music"></i> <?= $stats['alat']['total_semua'] ?>
                                                 </div>
-                                                <small class="opacity-75">Sedang Dipinjam</small>
+                                                <small class="opacity-75">Total Alat</small>
                                             </div>
                                         </div>
                                     </div>
