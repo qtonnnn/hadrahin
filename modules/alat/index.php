@@ -68,46 +68,6 @@ include '../../includes/header.php';
     <i class="fas fa-plus"></i>
 </a>
 
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 col-6">
-        <div class="stat-card stat-primary">
-            <div class="stat-icon">
-                <i class="fas fa-music"></i>
-            </div>
-            <div class="stat-value"><?= $total_alat ?></div>
-            <div class="stat-label">Jenis Alat</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="stat-card stat-success">
-            <div class="stat-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-value"><?= $total_baik ?></div>
-            <div class="stat-label">Kondisi Baik</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="stat-card stat-danger">
-            <div class="stat-icon">
-                <i class="fas fa-times-circle"></i>
-            </div>
-            <div class="stat-value"><?= $total_rusak ?></div>
-            <div class="stat-label">Kondisi Rusak</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="stat-card" style="background: linear-gradient(135deg, #6f42c1, #6610f2);">
-            <div class="stat-icon">
-                <i class="fas fa-chart-pie"></i>
-            </div>
-            <div class="stat-value"><?= $persen_baik ?>%</div>
-            <div class="stat-label">Kondisi Baik</div>
-        </div>
-    </div>
-</div>
-
 <!-- Toast Messages -->
 <?php if (isset($_GET['msg'])): ?>
     <?php
@@ -355,13 +315,42 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<!-- Legend -->
-<div class="card mt-4">
-    <div class="card-body">
-        <h6 class="font-weight-bold mb-2">Keterangan Status Pengguna:</h6>
-        <div class="d-flex flex-wrap gap-3">
-            <span><span class="badge bg-info me-1">Aktif</span> Sedang digunakan</span>
-            <span><span class="badge bg-secondary me-1">Dikembalikan</span> Sudah dikembalikan</span>
+<!-- Statistics Cards - Moved to Bottom -->
+<div class="row mt-4">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-music"></i>
+            </div>
+            <div class="stat-value"><?= $total_alat ?></div>
+            <div class="stat-label">Jenis Alat</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-value"><?= $total_baik ?></div>
+            <div class="stat-label">Kondisi Baik</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card stat-danger">
+            <div class="stat-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-value"><?= $total_rusak ?></div>
+            <div class="stat-label">Kondisi Rusak</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #6f42c1, #6610f2);">
+            <div class="stat-icon">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="stat-value"><?= $persen_baik ?>%</div>
+            <div class="stat-label">Kondisi Baik</div>
         </div>
     </div>
 </div>

@@ -147,41 +147,6 @@ include '../../includes/header.php';
     </div>
 </div>
 
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <?php
-    $count_aktif = $pdo->query("SELECT COUNT(*) FROM dresscode WHERE status = 'aktif'")->fetchColumn();
-    $count_nonaktif = $pdo->query("SELECT COUNT(*) FROM dresscode WHERE status = 'nonaktif'")->fetchColumn();
-    ?>
-    <div class="col-md-3 col-6">
-        <div class="stat-card stat-success">
-            <div class="stat-icon">
-                <i class="fas fa-tshirt"></i>
-            </div>
-            <div class="stat-value"><?= $count_aktif ?></div>
-            <div class="stat-label">Dresscode Aktif</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="stat-card stat-secondary">
-            <div class="stat-icon" style="background: rgba(108, 117, 125, 0.1); color: #6c757d;">
-                <i class="fas fa-eye-slash"></i>
-            </div>
-            <div class="stat-value"><?= $count_nonaktif ?></div>
-            <div class="stat-label">Dresscode Nonaktif</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="stat-card stat-primary">
-            <div class="stat-icon">
-                <i class="fas fa-list"></i>
-            </div>
-            <div class="stat-value"><?= $total_dresscode ?></div>
-            <div class="stat-label">Total Dresscode</div>
-        </div>
-    </div>
-</div>
-
 <!-- Dresscode List - Card View for Mobile, Table for Desktop -->
 <div class="card">
     <div class="card-body p-0">
@@ -363,6 +328,41 @@ include '../../includes/header.php';
         Menampilkan <?= count($dresscode_list) ?> dari <?= $total_dresscode ?> dresscode
     </div>
 <?php endif; ?>
+
+<!-- Statistics Cards - Moved to Bottom -->
+<div class="row mt-4">
+    <?php
+    $count_aktif = $pdo->query("SELECT COUNT(*) FROM dresscode WHERE status = 'aktif'")->fetchColumn();
+    $count_nonaktif = $pdo->query("SELECT COUNT(*) FROM dresscode WHERE status = 'nonaktif'")->fetchColumn();
+    ?>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-tshirt"></i>
+            </div>
+            <div class="stat-value"><?= $count_aktif ?></div>
+            <div class="stat-label">Dresscode Aktif</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card stat-secondary">
+            <div class="stat-icon" style="background: rgba(108, 117, 125, 0.1); color: #6c757d;">
+                <i class="fas fa-eye-slash"></i>
+            </div>
+            <div class="stat-value"><?= $count_nonaktif ?></div>
+            <div class="stat-label">Dresscode Nonaktif</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="stat-value"><?= $total_dresscode ?></div>
+            <div class="stat-label">Total Dresscode</div>
+        </div>
+    </div>
+</div>
 
 <style>
 /* Custom styles for dresscode cards on mobile */

@@ -229,6 +229,82 @@ usort($recent_activities, function($a, $b) {
 });
 $recent_activities = array_slice($recent_activities, 0, 5);
 
+// ============================================
+// ACTIVITY CHART DATA
+// ============================================
+
+// Get activities count by type for last 7 days
+$activity_chart_data = [];
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-{$i} days"));
+    $activity_chart_data[$date] = [
+        'date' => $date,
+        'label' => date('d/m', strtotime($date)),
+        'user' => 0,
+        'jadwal' => 0,
+        'booking' => 0,
+        'alat' => 0,
+        'dresscode' => 0
+    ];
+}
+
+// Count users by date
+$stmt = $pdo->query("SELECT DATE(created_at) as date, COUNT(*) as count FROM user WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(created_at)");
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if (isset($activity_chart_data[$row['date']])) {
+        $activity_chart_data[$row['date']]['user'] = (int)$row['count'];
+    }
+}
+
+// Count jadwal by date
+$stmt = $pdo->query("SELECT DATE(created_at) as date, COUNT(*) as count FROM jadwal_latihan WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(created_at)");
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if (isset($activity_chart_data[$row['date']])) {
+        $activity_chart_data[$row['date']]['jadwal'] = (int)$row['count'];
+    }
+}
+
+// Count booking by date
+$stmt = $pdo->query("SELECT DATE(created_at) as date, COUNT(*) as count FROM booking_acara WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(created_at)");
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if (isset($activity_chart_data[$row['date']])) {
+        $activity_chart_data[$row['date']]['booking'] = (int)$row['count'];
+    }
+}
+
+// Count alat activities by date
+$stmt = $pdo->query("SELECT DATE(created_at) as date, COUNT(*) as count FROM alat WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(created_at)");
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if (isset($activity_chart_data[$row['date']])) {
+        $activity_chart_data[$row['date']]['alat'] = (int)$row['count'];
+    }
+}
+
+// Count dresscode activities by date
+$stmt = $pdo->query("SELECT DATE(created_at) as date, COUNT(*) as count FROM dresscode WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(created_at)");
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if (isset($activity_chart_data[$row['date']])) {
+        $activity_chart_data[$row['date']]['dresscode'] = (int)$row['count'];
+    }
+}
+
+// Total activities by type for pie chart
+$activity_type_totals = [
+    'User' => 0,
+    'Jadwal' => 0,
+    'Booking' => 0,
+    'Alat' => 0,
+    'Dresscode' => 0
+];
+
+foreach ($activity_chart_data as $day) {
+    $activity_type_totals['User'] += $day['user'];
+    $activity_type_totals['Jadwal'] += $day['jadwal'];
+    $activity_type_totals['Booking'] += $day['booking'];
+    $activity_type_totals['Alat'] += $day['alat'];
+    $activity_type_totals['Dresscode'] += $day['dresscode'];
+}
+
 // Helper function untuk time ago
 function timeAgo($datetime) {
     $now = new DateTime();
@@ -1704,7 +1780,7 @@ body {
                         </div>
                     </div>
 
-                    <!-- Alat (Inventory) Statistics Widget -->
+<!-- Alat (Inventory) Statistics Widget -->
                     <div class="row g-4 mb-4">
                         <div class="col-12">
                             <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #fd7e14 0%, #e55c00 100%);">
@@ -1766,26 +1842,118 @@ body {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Booking Acara Statistics Widget -->
+                    <?php
+                    // Get booking statistics
+                    $stmt = $pdo->query("SELECT status, COUNT(*) as count FROM booking_acara GROUP BY status");
+                    $booking_stats = [];
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $booking_stats[$row['status']] = $row['count'];
+                    }
+                    $total_booking = array_sum($booking_stats);
+                    ?>
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #0dcaf0 0%, #0891b2 100%);">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fas fa-calendar-check me-2"></i>
+                                            Statistik Booking Acara
+                                        </h5>
+                                        <a href="<?= BASE_URL ?>/modules/acara/index.php" class="btn btn-light btn-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i>Kelola
+                                        </a>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold"><?= $total_booking ?></div>
+                                                <small class="opacity-75">Total Booking</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-warning">
+                                                    <i class="fas fa-clock"></i> <?= $booking_stats['menunggu'] ?? 0 ?>
+                                                </div>
+                                                <small class="opacity-75">Menunggu</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-success">
+                                                    <i class="fas fa-check"></i> <?= $booking_stats['diterima'] ?? 0 ?>
+                                                </div>
+                                                <small class="opacity-75">Diterima</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h2 mb-0 fw-bold text-danger">
+                                                    <i class="fas fa-times"></i> <?= $booking_stats['ditolak'] ?? 0 ?>
+                                                </div>
+                                                <small class="opacity-75">Ditolak</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mt-2">
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h4 mb-0 fw-bold text-info">
+                                                    <i class="fas fa-check-double"></i> <?= $booking_stats['selesai'] ?? 0 ?>
+                                                </div>
+                                                <small class="opacity-75">Selesai</small>
+                                            </div>
+                                        </div>
+                                        <?php if ($total_booking > 0): ?>
+                                        <div class="col-md-9 col-6">
+                                            <?php
+                                            $menunggu_pct = round((($booking_stats['menunggu'] ?? 0) / $total_booking) * 100);
+                                            $diterima_pct = round((($booking_stats['diterima'] ?? 0) / $total_booking) * 100);
+                                            $ditolak_pct = round((($booking_stats['ditolak'] ?? 0) / $total_booking) * 100);
+                                            $selesai_pct = round((($booking_stats['selesai'] ?? 0) / $total_booking) * 100);
+                                            ?>
+                                            <div class="d-flex gap-1">
+                                                <div class="bg-warning" style="flex: <?= $menunggu_pct ?>; height: 8px; border-radius: 4px 0 0 4px;" title="Menunggu: <?= $menunggu_pct ?>%"></div>
+                                                <div class="bg-success" style="flex: <?= $diterima_pct ?>; height: 8px;" title="Diterima: <?= $diterima_pct ?>%"></div>
+                                                <div class="bg-danger" style="flex: <?= $ditolak_pct ?>; height: 8px;" title="Ditolak: <?= $ditolak_pct ?>%"></div>
+                                                <div class="bg-info" style="flex: <?= $selesai_pct ?>; height: 8px; border-radius: 0 4px 4px 0;" title="Selesai: <?= $selesai_pct ?>%"></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <small class="text-white opacity-75">Menunggu: <?= $menunggu_pct ?>%</small>
+                                                <small class="text-white opacity-75">Diterima: <?= $diterima_pct ?>%</small>
+                                                <small class="text-white opacity-75">Ditolak: <?= $ditolak_pct ?>%</small>
+                                                <small class="text-white opacity-75">Selesai: <?= $selesai_pct ?>%</small>
+                                            </div>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <!-- Main Content Grid -->
+<!-- Main Content Grid -->
                     <div class="row g-4">
-                        <!-- Chart Section -->
+                        <!-- Activity Chart Section -->
                         <div class="col-lg-8">
                             <div class="chart-card">
                                 <div class="card-header">
                                     <div>
                                         <h5 class="card-title mb-1">
-                                            <i class="fas fa-chart-line me-2 text-primary"></i>
-                                            Pertumbuhan User
+                                            <i class="fas fa-chart-bar me-2 text-primary"></i>
+                                            Aktivitas 7 Hari Terakhir
                                         </h5>
-                                        <p class="card-subtitle mb-0">Grafik pendaftaran user 12 bulan terakhir</p>
+                                        <p class="card-subtitle mb-0">Grafik aktivitas sistem berdasarkan kategori</p>
                                     </div>
                                     <button class="btn btn-sm btn-outline-primary" onclick="refreshStats()">
                                         <i class="fas fa-sync-alt me-1"></i> Refresh
                                     </button>
                                 </div>
                                 <div class="chart-container">
-                                    <canvas id="userGrowthChart"></canvas>
+                                    <canvas id="activityChart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -2248,7 +2416,7 @@ body {
             }
         });
 
-        // Close sidebar when window is resized to desktop size
+// Close sidebar when window is resized to desktop size
         window.addEventListener('resize', function() {
             if (window.innerWidth > 1199.98) {
                 const sidebar = document.getElementById('sidebar');
@@ -2262,85 +2430,6 @@ body {
             }
         });
 
-        // User Growth Chart
-        const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
-        
-        // Prepare data from PHP
-        const months = <?php 
-            $labels = array_map(function($row) {
-                $date = DateTime::createFromFormat('Y-m', $row['month']);
-                return $date->format('M Y');
-            }, $stats['user_growth']);
-            echo json_encode($labels);
-        ?>;
-        
-        const userCounts = <?php 
-            $counts = array_map(function($row) {
-                return (int)$row['count'];
-            }, $stats['user_growth']);
-            echo json_encode($counts);
-        ?>;
-        
-        new Chart(userGrowthCtx, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [{
-                    label: 'User Baru',
-                    data: userCounts,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#0d6efd',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            font: { size: 11 }
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: { size: 11 }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            }
-        });
-        
         // Role Distribution Chart
         const roleCtx = document.getElementById('roleDistributionChart').getContext('2d');
         const roleData = <?php echo json_encode([
@@ -2422,7 +2511,7 @@ body {
             }
         });
         
-        // Alat (Inventory) Distribution Chart
+// Alat (Inventory) Distribution Chart
         const alatCtx = document.getElementById('alatDistributionChart').getContext('2d');
         const alatData = <?php echo json_encode([
             'Baik' => $stats['alat']['kondisi']['baik'],
@@ -2457,6 +2546,113 @@ body {
                     }
                 },
                 cutout: '65%'
+            }
+        });
+        
+        // Activity Chart (Last 7 Days)
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        
+        const activityLabels = <?php echo json_encode(array_column($activity_chart_data, 'label')); ?>;
+        const activityUserData = <?php echo json_encode(array_column($activity_chart_data, 'user')); ?>;
+        const activityJadwalData = <?php echo json_encode(array_column($activity_chart_data, 'jadwal')); ?>;
+        const activityBookingData = <?php echo json_encode(array_column($activity_chart_data, 'booking')); ?>;
+        const activityAlatData = <?php echo json_encode(array_column($activity_chart_data, 'alat')); ?>;
+        const activityDresscodeData = <?php echo json_encode(array_column($activity_chart_data, 'dresscode')); ?>;
+        
+        new Chart(activityCtx, {
+            type: 'bar',
+            data: {
+                labels: activityLabels,
+                datasets: [
+                    {
+                        label: 'User',
+                        data: activityUserData,
+                        backgroundColor: '#0d6efd',
+                        borderColor: '#0d6efd',
+                        borderWidth: 1,
+                        stack: 'stack0'
+                    },
+                    {
+                        label: 'Jadwal',
+                        data: activityJadwalData,
+                        backgroundColor: '#198754',
+                        borderColor: '#198754',
+                        borderWidth: 1,
+                        stack: 'stack0'
+                    },
+                    {
+                        label: 'Booking',
+                        data: activityBookingData,
+                        backgroundColor: '#0dcaf0',
+                        borderColor: '#0dcaf0',
+                        borderWidth: 1,
+                        stack: 'stack0'
+                    },
+                    {
+                        label: 'Alat',
+                        data: activityAlatData,
+                        backgroundColor: '#fd7e14',
+                        borderColor: '#fd7e14',
+                        borderWidth: 1,
+                        stack: 'stack0'
+                    },
+                    {
+                        label: 'Dresscode',
+                        data: activityDresscodeData,
+                        backgroundColor: '#6f42c1',
+                        borderColor: '#6f42c1',
+                        borderWidth: 1,
+                        stack: 'stack0'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'rect'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            font: { size: 11 }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            font: { size: 11 }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
             }
         });
         
