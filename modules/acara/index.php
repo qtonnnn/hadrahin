@@ -14,6 +14,18 @@ $page_title = "Kelola Booking Acara";
 $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 $status_filter = in_array($status_filter, ['menunggu', 'diterima', 'ditolak', 'selesai', 'all']) ? $status_filter : 'all';
 
+// Get period filter
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
+
+// Validate dates
+if (!empty($start_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date)) {
+    $start_date = '';
+}
+if (!empty($end_date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date)) {
+    $end_date = '';
+}
+
 // Search
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $search = htmlspecialchars(strip_tags($search), ENT_QUOTES, 'UTF-8');
@@ -39,6 +51,19 @@ if (!empty($search)) {
     $params[] = $search_param;
     $params[] = $search_param;
     $params[] = $search_param;
+}
+
+// Period filter
+if (!empty($start_date) && !empty($end_date)) {
+    $where_conditions[] = "ba.tanggal_acara BETWEEN ? AND ?";
+    $params[] = $start_date;
+    $params[] = $end_date;
+} elseif (!empty($start_date)) {
+    $where_conditions[] = "ba.tanggal_acara >= ?";
+    $params[] = $start_date;
+} elseif (!empty($end_date)) {
+    $where_conditions[] = "ba.tanggal_acara <= ?";
+    $params[] = $end_date;
 }
 
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
@@ -143,12 +168,27 @@ include '../../includes/header.php';
     <div class="card-body">
         <form method="GET" class="">
             <div class="row g-2">
+                <!-- Start Date -->
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Tanggal Mulai:</label>
+                    <input type="date" name="start_date" class="form-control" 
+                           value="<?= htmlspecialchars($start_date) ?>" max="<?= date('Y-m-d') ?>">
+                </div>
+                
+                <!-- End Date -->
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Tanggal Akhir:</label>
+                    <input type="date" name="end_date" class="form-control" 
+                           value="<?= htmlspecialchars($end_date) ?>" max="<?= date('Y-m-d') ?>">
+                </div>
+                
                 <!-- Search -->
-                <div class="col-md-6">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Cari:</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                         <input type="text" name="search" class="form-control" 
-                               placeholder="Cari nama acara, pemesan, atau lokasi..." 
+                               placeholder="Nama acara, pemesan, lokasi..." 
                                value="<?= htmlspecialchars($search) ?>"
                                maxlength="100">
                     </div>
@@ -156,24 +196,33 @@ include '../../includes/header.php';
                 
                 <!-- Status Filter Dropdown -->
                 <div class="col-md-3">
-                    <select name="status" class="form-select" onchange="this.form.submit()">
-                        <option value="all" <?= $status_filter == 'all' ? 'selected' : '' ?>>Semua Status</option>
+                    <label class="form-label small text-muted">Status:</label>
+                    <select name="status" class="form-select">
+                        <option value="all" <?= $status_filter == 'all' ? 'selected' : '' ?>>Semua</option>
                         <option value="menunggu" <?= $status_filter == 'menunggu' ? 'selected' : '' ?>>Menunggu</option>
                         <option value="diterima" <?= $status_filter == 'diterima' ? 'selected' : '' ?>>Diterima</option>
                         <option value="ditolak" <?= $status_filter == 'ditolak' ? 'selected' : '' ?>>Ditolak</option>
                         <option value="selesai" <?= $status_filter == 'selesai' ? 'selected' : '' ?>>Selesai</option>
                     </select>
                 </div>
-                
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search me-1"></i>Cari
-                    </button>
-                </div>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+// Auto-submit form when any filter changes
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input[type="text"], input[type="date"], select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('change', function() {
+            form.submit();
+        });
+    });
+});
+</script>
 
 <!-- Bookings Card -->
 <div class="card">
@@ -243,6 +292,11 @@ include '../../includes/header.php';
                                         <a href="edit.php?id=<?= $booking['id_booking'] ?>" class="btn btn-sm btn-outline-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <?php 
+                                        $event_date = strtotime($booking['tanggal_acara']);
+                                        $today = strtotime(date('Y-m-d'));
+                                        $can_finish = $booking['status'] == 'diterima' && $event_date <= $today;
+                                        ?>
                                         <?php if ($booking['status'] != 'selesai'): ?>
                                             <button class="btn btn-sm btn-outline-success" 
                                                     onclick="updateStatus(<?= $booking['id_booking'] ?>, 'diterima')"
@@ -256,11 +310,19 @@ include '../../includes/header.php';
                                             </button>
                                         <?php endif; ?>
                                         <?php if ($booking['status'] == 'diterima'): ?>
-                                            <button class="btn btn-sm btn-outline-primary" 
-                                                    onclick="updateStatus(<?= $booking['id_booking'] ?>, 'selesai')"
-                                                    title="Selesai">
-                                                <i class="fas fa-check-double"></i>
-                                            </button>
+                                            <?php if ($can_finish): ?>
+                                                <button class="btn btn-sm btn-outline-primary" 
+                                                        onclick="updateStatus(<?= $booking['id_booking'] ?>, 'selesai')"
+                                                        title="Selesai">
+                                                    <i class="fas fa-check-double"></i>
+                                                </button>
+                                            <?php else: ?>
+                                                <button class="btn btn-sm btn-secondary" 
+                                                        title="Belum waktunya - Acara belum berlangsung"
+                                                        disabled>
+                                                    <i class="fas fa-check-double"></i>
+                                                </button>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                         <?php if ($_SESSION['peran'] == 'admin'): ?>
                                             <a href="hapus.php?id=<?= $booking['id_booking'] ?>" class="btn btn-sm btn-outline-danger" 
@@ -325,6 +387,11 @@ include '../../includes/header.php';
                                 <a href="edit.php?id=<?= $booking['id_booking'] ?>" class="btn btn-sm btn-outline-warning">
                                     <i class="fas fa-edit me-1"></i>Edit
                                 </a>
+                                <?php 
+                                $event_date = strtotime($booking['tanggal_acara']);
+                                $today = strtotime(date('Y-m-d'));
+                                $can_finish = $booking['status'] == 'diterima' && $event_date <= $today;
+                                ?>
                                 <?php if ($booking['status'] == 'menunggu'): ?>
                                     <button class="btn btn-sm btn-outline-success" onclick="updateStatus(<?= $booking['id_booking'] ?>, 'diterima')">
                                         <i class="fas fa-check me-1"></i>Terima
@@ -334,9 +401,15 @@ include '../../includes/header.php';
                                     </button>
                                 <?php endif; ?>
                                 <?php if ($booking['status'] == 'diterima'): ?>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="updateStatus(<?= $booking['id_booking'] ?>, 'selesai')">
-                                        <i class="fas fa-check-double me-1"></i>Selesai
-                                    </button>
+                                    <?php if ($can_finish): ?>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="updateStatus(<?= $booking['id_booking'] ?>, 'selesai')">
+                                            <i class="fas fa-check-double me-1"></i>Selesai
+                                        </button>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-secondary" title="Belum waktunya - Acara belum berlangsung" disabled>
+                                            <i class="fas fa-check-double me-1"></i>Selesai
+                                        </button>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                                 <?php if ($_SESSION['peran'] == 'admin'): ?>
                                     <a href="hapus.php?id=<?= $booking['id_booking'] ?>" class="btn btn-sm btn-outline-danger">
@@ -357,33 +430,62 @@ include '../../includes/header.php';
     <nav aria-label="Page navigation" class="mt-4">
         <ul class="pagination justify-content-center">
             <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                <a class="page-link" href="?page=<?= $page - 1 ?>&status=<?= $status_filter ?>&search=<?= urlencode($search) ?>">
+                <a class="page-link" href="?page=<?= $page - 1 ?>&status=<?= $status_filter ?>&search=<?= urlencode($search) ?>&start_date=<?= urlencode($start_date) ?>&end_date=<?= urlencode($end_date) ?>">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             </li>
             <?php for ($p = 1; $p <= $total_pages; $p++): ?>
                 <li class="page-item <?= $p === $page ? 'active' : '' ?>">
-                    <a class="page-link" href="?page=<?= $p ?>&status=<?= $status_filter ?>&search=<?= urlencode($search) ?>"><?= $p ?></a>
+                    <a class="page-link" href="?page=<?= $p ?>&status=<?= $status_filter ?>&search=<?= urlencode($search) ?>&start_date=<?= urlencode($start_date) ?>&end_date=<?= urlencode($end_date) ?>"><?= $p ?></a>
                 </li>
             <?php endfor; ?>
             <li class="page-item <?= $page >= $total_pages ? 'disabled' : '' ?>">
-                <a class="page-link" href="?page=<?= $page + 1 ?>&status=<?= $status_filter ?>&search=<?= urlencode($search) ?>">
+                <a class="page-link" href="?page=<?= $page + 1 ?>&status=<?= $status_filter ?>&search=<?= urlencode($search) ?>&start_date=<?= urlencode($start_date) ?>&end_date=<?= urlencode($end_date) ?>">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             </li>
         </ul>
     </nav>
     <div class="text-center text-muted small mt-2">
+        <?php if (!empty($start_date) || !empty($end_date)): ?>
+            <span class="badge bg-info mb-2">
+                <i class="fas fa-calendar-alt me-1"></i>
+                Periode: <?= !empty($start_date) ? date('d/m/Y', strtotime($start_date)) : '-' ?> 
+                s/d 
+                <?= !empty($end_date) ? date('d/m/Y', strtotime($end_date)) : '-' ?>
+            </span>
+            <br>
+        <?php endif; ?>
         Menampilkan <?= count($bookings) ?> dari <?= $total_bookings ?> booking
     </div>
 <?php endif; ?>
 
-<!-- Statistics Cards - Moved to Bottom -->
+<!-- Statistics Cards - Filtered by Period -->
 <?php
+// Build stats query based on period
+$stats_where = "";
+$stats_params = [];
+
+if (!empty($start_date) && !empty($end_date)) {
+    $stats_where = " WHERE tanggal_acara BETWEEN ? AND ?";
+    $stats_params = [$start_date, $end_date];
+} elseif (!empty($start_date)) {
+    $stats_where = " WHERE tanggal_acara >= ?";
+    $stats_params = [$start_date];
+} elseif (!empty($end_date)) {
+    $stats_where = " WHERE tanggal_acara <= ?";
+    $stats_params = [$end_date];
+}
+
 // Get booking statistics
 try {
     $stats = [];
-    $stmt = $pdo->query("SELECT status, COUNT(*) as count FROM booking_acara GROUP BY status");
+    if (!empty($stats_where)) {
+        $stmt = $pdo->prepare("SELECT status, COUNT(*) as count FROM booking_acara {$stats_where} GROUP BY status");
+        $stmt->execute($stats_params);
+    } else {
+        $stmt = $pdo->query("SELECT status, COUNT(*) as count FROM booking_acara GROUP BY status");
+    }
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $stats[$row['status']] = $row['count'];
     }

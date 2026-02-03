@@ -9,6 +9,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Include database config for BASE_URL and $pdo
+require_once __DIR__ . '/../config/database.php';
+
 // Check authentication
 if (!isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . '/auth/login.php');
@@ -37,11 +40,71 @@ $is_profil_page = $current_page === 'edit' && $is_user_module && isset($_GET['id
 
 $page_titles = [
     'index' => 'Dashboard',
-    'tambah' => 'Tambah User',
-    'edit' => 'Edit User',
-    'hapus' => 'Hapus User'
+    'tambah' => 'Tambah',
+    'edit' => 'Edit',
+    'hapus' => 'Hapus'
 ];
-$page_title = $page_titles[$current_page] ?? ucfirst($current_page);
+
+// Module-specific titles
+if (strpos($current_path, '/modules/user/') !== false) {
+    $module_page_titles = [
+        'index' => 'Manajemen User',
+        'tambah' => 'Tambah User',
+        'edit' => 'Edit User',
+        'hapus' => 'Hapus User'
+    ];
+} elseif (strpos($current_path, '/modules/jadwallatihan/') !== false) {
+    $module_page_titles = [
+        'index' => 'Jadwal Latihan',
+        'tambah' => 'Tambah Jadwal',
+        'edit' => 'Edit Jadwal',
+        'hapus' => 'Hapus Jadwal'
+    ];
+} elseif (strpos($current_path, '/modules/absenlatihan/') !== false) {
+    $module_page_titles = [
+        'index' => 'Absensi Latihan',
+        'absen' => 'Absen Latihan',
+        'export' => 'Export Absensi'
+    ];
+} elseif (strpos($current_path, '/modules/acara/') !== false) {
+    $module_page_titles = [
+        'index' => 'Booking Acara',
+        'tambah' => 'Tambah Booking',
+        'edit' => 'Edit Booking',
+        'hapus' => 'Hapus Booking',
+        'dokumentasi' => 'Dokumentasi',
+        'update_status' => 'Update Status'
+    ];
+} elseif (strpos($current_path, '/modules/alat/') !== false) {
+    $module_page_titles = [
+        'index' => 'Inventaris Alat',
+        'tambah' => 'Tambah Alat',
+        'edit' => 'Edit Alat',
+        'hapus' => 'Hapus Alat'
+    ];
+} elseif (strpos($current_path, '/modules/keuangan/') !== false) {
+    $module_page_titles = [
+        'index' => 'Keuangan',
+        'tambah' => 'Tambah Transaksi',
+        'edit' => 'Edit Transaksi',
+        'hapus' => 'Hapus Transaksi'
+    ];
+} elseif (strpos($current_path, '/modules/dresscode/') !== false) {
+    $module_page_titles = [
+        'index' => 'Dresscode',
+        'tambah' => 'Tambah Dresscode',
+        'edit' => 'Edit Dresscode',
+        'hapus' => 'Hapus Dresscode'
+    ];
+} else {
+    $module_page_titles = [];
+}
+
+if (isset($module_page_titles[$current_page])) {
+    $page_title = $module_page_titles[$current_page];
+} else {
+    $page_title = $page_titles[$current_page] ?? ucfirst($current_page);
+}
 
 // Get module name for breadcrumb
 $module_name = 'Manajemen User';

@@ -122,39 +122,21 @@ include '../../includes/header.php';
 <!-- Search Form -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="GET" class="d-flex flex-wrap gap-2 align-items-end search-form" id="searchForm">
-            <div class="input-group" style="max-width: 300px;">
+        <form method="GET" class="d-flex search-form">
+            <div class="input-group" style="max-width: 400px;">
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" name="search" id="searchInput" class="form-control" 
+                <input type="text" name="search" class="form-control" 
                        placeholder="Cari alat..." 
                        value="<?= htmlspecialchars($search) ?>"
-                       maxlength="100"
-                       autocomplete="off">
+                       maxlength="100">
+                <?php if ($search): ?>
+                    <a href="index.php" class="btn btn-outline-secondary">Reset</a>
+                <?php endif; ?>
+                <button type="submit" class="btn btn-primary">Cari</button>
             </div>
-            <?php if ($search): ?>
-                <a href="index.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i>Reset
-                </a>
-            <?php endif; ?>
         </form>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const searchForm = document.getElementById('searchForm');
-    let searchTimeout = null;
-    
-    // Auto-submit on input with debounce
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            searchForm.submit();
-        }, 500); // 500ms delay
-    });
-});
-</script>
 
 <!-- Alat List - Card View for Mobile, Table for Desktop -->
 <div class="card">

@@ -63,6 +63,21 @@ try {
         exit;
     }
 
+    // Validate event date for 'selesai' status
+    if ($status == 'selesai') {
+        $stmt = $pdo->prepare("SELECT tanggal_acara FROM booking_acara WHERE id_booking = ?");
+        $stmt->execute([$id_booking]);
+        $event_date = $stmt->fetchColumn();
+        
+        $event_timestamp = strtotime($event_date);
+        $today_timestamp = strtotime(date('Y-m-d'));
+        
+        if ($event_timestamp > $today_timestamp) {
+            echo json_encode(['success' => false, 'message' => 'Tidak dapat menandai selesai - Acara belum berlangsung']);
+            exit;
+        }
+    }
+
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
     exit;

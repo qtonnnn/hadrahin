@@ -77,7 +77,11 @@ $stmt = $pdo->prepare("SELECT COUNT(*) FROM absen_latihan a
 $stmt->execute();
 $stats['absensi_hari_ini'] = $stmt->fetchColumn();
 
-// Keuangan
+// ============================================
+// KEUANGAN STATISTICS
+// ============================================
+
+// Basic Financial Summary
 $stmt = $pdo->query("SELECT 
     COALESCE(SUM(CASE WHEN tipe = 'pemasukan' THEN jumlah ELSE 0 END), 0) as pemasukan,
     COALESCE(SUM(CASE WHEN tipe = 'pengeluaran' THEN jumlah ELSE 0 END), 0) as pengeluaran
@@ -88,6 +92,88 @@ $stats['keuangan'] = [
     'pengeluaran' => $data['pengeluaran'],
     'saldo' => $data['pemasukan'] - $data['pengeluaran']
 ];
+
+// Bulan ini
+$bulan_ini_start = date('Y-m-01');
+$bulan_ini_end = date('Y-m-t');
+$stmt = $pdo->prepare("SELECT 
+    COALESCE(SUM(CASE WHEN tipe = 'pemasukan' THEN jumlah ELSE 0 END), 0) as pemasukan,
+    COALESCE(SUM(CASE WHEN tipe = 'pengeluaran' THEN jumlah ELSE 0 END), 0) as pengeluaran
+FROM keuangan WHERE tanggal BETWEEN ? AND ?");
+$stmt->execute([$bulan_ini_start, $bulan_ini_end]);
+$data_bulan_ini = $stmt->fetch(PDO::FETCH_ASSOC);
+$stats['keuangan']['bulan_ini_pemasukan'] = $data_bulan_ini['pemasukan'];
+$stats['keuangan']['bulan_ini_pengeluaran'] = $data_bulan_ini['pengeluaran'];
+$stats['keuangan']['bulan_ini_saldo'] = $data_bulan_ini['pemasukan'] - $data_bulan_ini['pengeluaran'];
+
+// Bulan lalu
+$bulan_lalu_start = date('Y-m-01', strtotime('-1 month'));
+$bulan_lalu_end = date('Y-m-t', strtotime('-1 month'));
+$stmt = $pdo->prepare("SELECT 
+    COALESCE(SUM(CASE WHEN tipe = 'pemasukan' THEN jumlah ELSE 0 END), 0) as pemasukan,
+    COALESCE(SUM(CASE WHEN tipe = 'pengeluaran' THEN jumlah ELSE 0 END), 0) as pengeluaran
+FROM keuangan WHERE tanggal BETWEEN ? AND ?");
+$stmt->execute([$bulan_lalu_start, $bulan_lalu_end]);
+$data_bulan_lalu = $stmt->fetch(PDO::FETCH_ASSOC);
+$stats['keuangan']['bulan_lalu_pemasukan'] = $data_bulan_lalu['pemasukan'];
+$stats['keuangan']['bulan_lalu_pengeluaran'] = $data_bulan_lalu['pengeluaran'];
+
+// Kategori Pemasukan Breakdown
+$stmt = $pdo->query("SELECT kategori, COALESCE(SUM(jumlah), 0) as total 
+                     FROM keuangan 
+                     WHERE tipe = 'pemasukan' AND kategori IS NOT NULL 
+                     GROUP BY kategori 
+                     ORDER BY total DESC");
+$stats['keuangan']['kategori_pemasukan'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Kategori Pengeluaran Breakdown
+$stmt = $pdo->query("SELECT kategori, COALESCE(SUM(jumlah), 0) as total 
+                     FROM keuangan 
+                     WHERE tipe = 'pengeluaran' AND kategori IS NOT NULL 
+                     GROUP BY kategori 
+                     ORDER BY total DESC");
+$stats['keuangan']['kategori_pengeluaran'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Transaksi Terbaru (5 terakhir)
+$stmt = $pdo->query("SELECT * FROM keuangan ORDER BY created_at DESC LIMIT 5");
+$stats['keuangan']['recent_transactions'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Data Tren 6 Bulan Terakhir (untuk chart)
+$tren_data = [];
+for ($i = 5; $i >= 0; $i--) {
+    $bulan = date('Y-m', strtotime("-{$i} months"));
+    $bulan_awal = $bulan . '-01';
+    $bulan_akhir = date('Y-m-t', strtotime($bulan));
+    
+    $stmt = $pdo->prepare("SELECT 
+        COALESCE(SUM(CASE WHEN tipe = 'pemasukan' THEN jumlah ELSE 0 END), 0) as pemasukan,
+        COALESCE(SUM(CASE WHEN tipe = 'pengeluaran' THEN jumlah ELSE 0 END), 0) as pengeluaran
+    FROM keuangan WHERE tanggal BETWEEN ? AND ?");
+    $stmt->execute([$bulan_awal, $bulan_akhir]);
+    $data_tren = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $tren_data[] = [
+        'bulan' => $bulan,
+        'label' => date('M y', strtotime($bulan)),
+        'pemasukan' => (float)$data_tren['pemasukan'],
+        'pengeluaran' => (float)$data_tren['pengeluaran'],
+        'saldo' => (float)$data_tren['pemasukan'] - (float)$data_tren['pengeluaran']
+    ];
+}
+$stats['keuangan']['tren_6_bulan'] = $tren_data;
+
+// Transaksi Hari Ini
+$stmt = $pdo->prepare("SELECT 
+    COALESCE(SUM(CASE WHEN tipe = 'pemasukan' THEN jumlah ELSE 0 END), 0) as pemasukan,
+    COALESCE(SUM(CASE WHEN tipe = 'pengeluaran' THEN jumlah ELSE 0 END), 0) as pengeluaran,
+    COUNT(*) as total_transaksi
+FROM keuangan WHERE tanggal = CURDATE()");
+$stmt->execute();
+$stats['keuangan']['hari_ini'] = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Total Transaksi
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM keuangan");
+$stats['keuangan']['total_transaksi'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
 // User Growth Data (12 bulan terakhir)
 $query = "SELECT 
@@ -1503,7 +1589,7 @@ body {
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <a href="<?= BASE_URL ?>/modules/keuangan/index.php" class="nav-link">
                                     <i class="fas fa-wallet"></i>
                                     <span>Keuangan</span>
                                 </a>
@@ -1934,8 +2020,266 @@ body {
                             </div>
                         </div>
                     </div>
+
+                    <!-- ========================================== -->
+                    <!-- KEUANGAN STATISTICS WIDGET -->
+                    <!-- ========================================== -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title text-white mb-0">
+                                            <i class="fas fa-wallet me-2"></i>
+                                            Statistik Keuangan
+                                        </h5>
+                                        <a href="<?= BASE_URL ?>/modules/keuangan/index.php" class="btn btn-light btn-sm">
+                                            <i class="fas fa-external-link-alt me-1"></i>Detail Kas
+                                        </a>
+                                    </div>
+                                    <div class="row g-3">
+                                        <!-- Total Saldo -->
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h3 mb-0 fw-bold">Rp <?= number_format($stats['keuangan']['saldo'], 0, ',', '.') ?></div>
+                                                <small class="opacity-75">Total Saldo Kas</small>
+                                            </div>
+                                        </div>
+                                        <!-- Total Pemasukan -->
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h3 mb-0 fw-bold text-success">
+                                                    <i class="fas fa-arrow-down"></i> Rp <?= number_format($stats['keuangan']['pemasukan'], 0, ',', '.') ?>
+                                                </div>
+                                                <small class="opacity-75">Total Pemasukan</small>
+                                            </div>
+                                        </div>
+                                        <!-- Total Pengeluaran -->
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h3 mb-0 fw-bold text-danger">
+                                                    <i class="fas fa-arrow-up"></i> Rp <?= number_format($stats['keuangan']['pengeluaran'], 0, ',', '.') ?>
+                                                </div>
+                                                <small class="opacity-75">Total Pengeluaran</small>
+                                            </div>
+                                        </div>
+                                        <!-- Total Transaksi -->
+                                        <div class="col-md-3 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h3 mb-0 fw-bold text-info">
+                                                    <i class="fas fa-list"></i> <?= $stats['keuangan']['total_transaksi'] ?? 0 ?>
+                                                </div>
+                                                <small class="opacity-75">Total Transaksi</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr style="border-color: rgba(255,255,255,0.3);">
+                                    <!-- Bulan Ini vs Bulan Lalu -->
+                                    <div class="row g-3 mt-2">
+                                        <div class="col-md-4 col-12">
+                                            <div class="text-center text-white">
+                                                <div class="h5 mb-0">Bulan Ini</div>
+                                                <div class="small opacity-75 mb-2">
+                                                    <span class="text-success">+Rp <?= number_format($stats['keuangan']['bulan_ini_pemasukan'] ?? 0, 0, ',', '.') ?></span> | 
+                                                    <span class="text-danger">-Rp <?= number_format($stats['keuangan']['bulan_ini_pengeluaran'] ?? 0, 0, ',', '.') ?></span>
+                                                </div>
+                                                <div class="badge bg-light text-success px-3 py-2">
+                                                    Saldo: Rp <?= number_format($stats['keuangan']['bulan_ini_saldo'] ?? 0, 0, ',', '.') ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h5 mb-0">Hari Ini</div>
+                                                <div class="small opacity-75 mb-2">
+                                                    <span class="text-success">+Rp <?= number_format($stats['keuangan']['hari_ini']['pemasukan'] ?? 0, 0, ',', '.') ?></span> | 
+                                                    <span class="text-danger">-Rp <?= number_format($stats['keuangan']['hari_ini']['pengeluaran'] ?? 0, 0, ',', '.') ?></span>
+                                                </div>
+                                                <div class="small">
+                                                    <i class="fas fa-exchange-alt"></i> <?= $stats['keuangan']['hari_ini']['total_transaksi'] ?? 0 ?> transaksi
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-6">
+                                            <div class="text-center text-white">
+                                                <div class="h5 mb-0">Bulan Lalu</div>
+                                                <div class="small opacity-75 mb-2">
+                                                    <span class="text-success">+Rp <?= number_format($stats['keuangan']['bulan_lalu_pemasukan'] ?? 0, 0, ',', '.') ?></span> | 
+                                                    <span class="text-danger">-Rp <?= number_format($stats['keuangan']['bulan_lalu_pengeluaran'] ?? 0, 0, ',', '.') ?></span>
+                                                </div>
+                                                <?php
+                                                $growth = 0;
+                                                if (($stats['keuangan']['bulan_lalu_pemasukan'] ?? 0) > 0) {
+                                                    $growth = round((($stats['keuangan']['bulan_ini_pemasukan'] - $stats['keuangan']['bulan_lalu_pemasukan']) / $stats['keuangan']['bulan_lalu_pemasukan']) * 100, 1);
+                                                }
+                                                ?>
+                                                <div class="badge <?= $growth >= 0 ? 'bg-light text-success' : 'bg-danger' ?> px-3 py-2">
+                                                    <i class="fas <?= $growth >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' ?>"></i> <?= abs($growth) ?>% vs bulan lalu
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kategori Pemasukan & Pengeluaran Breakdown -->
+                    <div class="row g-4 mb-4">
+                        <!-- Kategori Pemasukan -->
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-success text-white py-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-arrow-down me-2"></i>
+                                        Kategori Pemasukan
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <?php if (empty($stats['keuangan']['kategori_pemasukan'])): ?>
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fas fa-wallet fa-3x mb-3 d-block text-secondary"></i>
+                                            <p class="mb-0">Belum ada data pemasukan</p>
+                                        </div>
+                                    <?php else: ?>
+                                        <?php 
+                                        $total_pemasukan = array_sum(array_column($stats['keuangan']['kategori_pemasukan'], 'total'));
+                                        foreach ($stats['keuangan']['kategori_pemasukan'] as $kat): 
+                                            $percent = $total_pemasukan > 0 ? round(($kat['total'] / $total_pemasukan) * 100) : 0;
+                                        ?>
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span><?= htmlspecialchars($kat['kategori']) ?></span>
+                                                    <span class="fw-bold">Rp <?= number_format($kat['total'], 0, ',', '.') ?></span>
+                                                </div>
+                                                <div class="progress" style="height: 10px;">
+                                                    <div class="progress-bar bg-success" style="width: <?= $percent ?>%;"></div>
+                                                </div>
+                                                <small class="text-muted"><?= $percent ?>% dari total pemasukan</small>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <div class="text-center mt-3">
+                                            <span class="badge bg-success px-3 py-2">
+                                                Total: Rp <?= number_format($total_pemasukan, 0, ',', '.') ?>
+                                            </span>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Kategori Pengeluaran -->
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-danger text-white py-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-arrow-up me-2"></i>
+                                        Kategori Pengeluaran
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <?php if (empty($stats['keuangan']['kategori_pengeluaran'])): ?>
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fas fa-wallet fa-3x mb-3 d-block text-secondary"></i>
+                                            <p class="mb-0">Belum ada data pengeluaran</p>
+                                        </div>
+                                    <?php else: ?>
+                                        <?php 
+                                        $total_pengeluaran = array_sum(array_column($stats['keuangan']['kategori_pengeluaran'], 'total'));
+                                        foreach ($stats['keuangan']['kategori_pengeluaran'] as $kat): 
+                                            $percent = $total_pengeluaran > 0 ? round(($kat['total'] / $total_pengeluaran) * 100) : 0;
+                                        ?>
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span><?= htmlspecialchars($kat['kategori']) ?></span>
+                                                    <span class="fw-bold">Rp <?= number_format($kat['total'], 0, ',', '.') ?></span>
+                                                </div>
+                                                <div class="progress" style="height: 10px;">
+                                                    <div class="progress-bar bg-danger" style="width: <?= $percent ?>%;"></div>
+                                                </div>
+                                                <small class="text-muted"><?= $percent ?>% dari total pengeluaran</small>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <div class="text-center mt-3">
+                                            <span class="badge bg-danger px-3 py-2">
+                                                Total: Rp <?= number_format($total_pengeluaran, 0, ',', '.') ?>
+                                            </span>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaksi Terbaru & Tren Chart -->
+                    <div class="row g-4 mb-4">
+                        <!-- Transaksi Terbaru -->
+                        <div class="col-lg-5">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header py-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-history me-2"></i>
+                                        Transaksi Terbaru
+                                    </h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <?php if (empty($stats['keuangan']['recent_transactions'])): ?>
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fas fa-receipt fa-3x mb-3 d-block text-secondary"></i>
+                                            <p class="mb-0">Belum ada transaksi</p>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Tipe</th>
+                                                        <th>Kategori</th>
+                                                        <th>Jumlah</th>
+                                                        <th>Tanggal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($stats['keuangan']['recent_transactions'] as $trx): ?>
+                                                        <tr>
+                                                            <td>
+                                                                <span class="badge <?= $trx['tipe'] === 'pemasukan' ? 'bg-success' : 'bg-danger' ?>">
+                                                                    <?= $trx['tipe'] === 'pemasukan' ? '<i class="fas fa-arrow-down"></i>' : '<i class="fas fa-arrow-up"></i>' ?>
+                                                                    <?= ucfirst($trx['tipe']) ?>
+                                                                </span>
+                                                            </td>
+                                                            <td><?= htmlspecialchars($trx['kategori'] ?? '-') ?></td>
+                                                            <td class="fw-bold <?= $trx['tipe'] === 'pemasukan' ? 'text-success' : 'text-danger' ?>">
+                                                                Rp <?= number_format($trx['jumlah'], 0, ',', '.') ?>
+                                                            </td>
+                                                            <td><?= date('d/m/Y', strtotime($trx['tanggal'])) ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tren Keuangan Chart -->
+                        <div class="col-lg-7">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header py-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        Tren Keuangan (6 Bulan Terakhir)
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="keuanganTrenChart" style="max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
-<!-- Main Content Grid -->
+                    <!-- Main Content Grid -->
                     <div class="row g-4">
                         <!-- Activity Chart Section -->
                         <div class="col-lg-8">
@@ -2012,7 +2356,7 @@ body {
                                             <i class="fas fa-clipboard-check text-info"></i>
                                             <span>Cek Booking</span>
                                         </a>
-                                        <a href="#" class="quick-action-btn">
+                                        <a href="<?= BASE_URL ?>/modules/keuangan/tambah.php" class="quick-action-btn">
                                             <i class="fas fa-file-invoice-dollar text-warning"></i>
                                             <span>Input Kas</span>
                                         </a>
@@ -2643,6 +2987,94 @@ body {
                         ticks: {
                             stepSize: 1,
                             font: { size: 11 }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+        
+        // Keuangan Trend Chart (6 Bulan Terakhir)
+        const keuanganTrenCtx = document.getElementById('keuanganTrenChart').getContext('2d');
+        const keuanganTrenLabels = <?php echo json_encode(array_column($stats['keuangan']['tren_6_bulan'], 'label')); ?>;
+        const keuanganTrenPemasukan = <?php echo json_encode(array_column($stats['keuangan']['tren_6_bulan'], 'pemasukan')); ?>;
+        const keuanganTrenPengeluaran = <?php echo json_encode(array_column($stats['keuangan']['tren_6_bulan'], 'pengeluaran')); ?>;
+        
+        new Chart(keuanganTrenCtx, {
+            type: 'line',
+            data: {
+                labels: keuanganTrenLabels,
+                datasets: [
+                    {
+                        label: 'Pemasukan',
+                        data: keuanganTrenPemasukan,
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#198754'
+                    },
+                    {
+                        label: 'Pengeluaran',
+                        data: keuanganTrenPengeluaran,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#dc3545'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': Rp ' + context.parsed.y.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: 11 }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
                         },
                         grid: {
                             color: 'rgba(0, 0, 0, 0.05)'

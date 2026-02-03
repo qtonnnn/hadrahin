@@ -57,13 +57,13 @@
                         <div class="nav-section-title">Manajemen</div>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a href="<?= BASE_URL ?>/modules/alat/index.php" class="nav-link">
+                                <a href="<?= BASE_URL ?>/modules/alat/index.php" class="nav-link <?= isset($is_alat_module) && $is_alat_module ? 'active' : '' ?>">
                                     <i class="fas fa-music"></i>
                                     <span>Inventaris Alat</span>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="<?= BASE_URL ?>/modules/keuangan/index.php" class="nav-link">
+                                <a href="<?= BASE_URL ?>/modules/keuangan/index.php" class="nav-link <?= isset($is_keuangan_module) && $is_keuangan_module ? 'active' : '' ?>">
                                     <i class="fas fa-wallet"></i>
                                     <span>Keuangan</span>
                                 </a>
