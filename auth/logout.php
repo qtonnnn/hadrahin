@@ -4,6 +4,15 @@
  * Fungsi: Logout yang aman dan menghapus semua session/cookie
  */
 
+// ============================================
+// ANTI-CACHE HEADERS - PENTING UNTUK KEAMANAN
+// ============================================
+// Headers ini mencegah browser menyimpan cache
+// dan memaksa browser untuk selalu (fresh) request
+header('Cache-Control: no-store, no-cache, must-revalidate, private');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // Start session dulu untuk akses $_SESSION
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

@@ -4,6 +4,15 @@
  * Halaman dashboard untuk peran admin dengan sidebar dan statistik real-time
  */
 
+// ============================================
+// ANTI-CACHE HEADERS - PENTING UNTUK KEAMANAN
+// ============================================
+// Headers ini mencegah browser menyimpan cache halaman
+// sehingga setelah logout, halaman tidak bisa diakses via back button
+header('Cache-Control: no-store, no-cache, must-revalidate, private');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // Start session dan include database
 session_start();
 require_once '../config/database.php';
@@ -431,8 +440,35 @@ function getJadwalPeriode($pdo) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- Tambahkan ini di head -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Immediate redirect if not logged in (prevents cached page flash) -->
+    <script>
+    (function() {
+        var checkSession = function() {
+            fetch('<?= BASE_URL ?>/auth/check_session.php')
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (!data.logged_in) {
+                        window.location.href = '<?= BASE_URL ?>/auth/login.php?session_expired=1';
+                    }
+                })
+                .catch(function() {
+                    window.location.href = '<?= BASE_URL ?>/auth/login.php?session_expired=1';
+                });
+        };
+        
+        // Check immediately
+        checkSession();
+        
+        // Then check periodically
+        setInterval(checkSession, 3000);
+    })();
+    </script>
+    
     <title>Dashboard Admin - Hadrah App</title>
     
     <!-- Bootstrap CSS -->
@@ -3155,6 +3191,55 @@ body {
         
         // Store interval ID for potential cleanup
         window.adminRefreshInterval = refreshInterval;
+    </script>
+    
+    <!-- JavaScript Session Checker - Extra Security Layer -->
+    <script>
+    // JavaScript-based session checker
+    // Ini adalah layer keamanan tambahan untuk mencegah akses cached pages
+    (function() {
+        var BASE_URL = '<?= BASE_URL ?>';
+        
+        // Function to check if user is still logged in
+        function checkSession() {
+            fetch(BASE_URL + '/auth/check_session.php')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (!data.logged_in) {
+                        // Session tidak valid, redirect ke login
+                        window.location.href = BASE_URL + '/auth/login.php?session_expired=1';
+                    }
+                })
+                .catch(function(error) {
+                    // Jika fetch gagal, redirect juga untuk keamanan
+                    console.log('Session check failed, redirecting...');
+                    window.location.href = BASE_URL + '/auth/login.php?session_expired=1';
+                });
+        }
+        
+        // Check session every 3 seconds (lebih sering untuk responsivitas)
+        var sessionCheckInterval = setInterval(checkSession, 3000);
+        
+        // Also check when page becomes visible (user switches tabs/apps)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                checkSession();
+            }
+        });
+        
+        // Check when window gains focus
+        window.addEventListener('focus', function() {
+            checkSession();
+        });
+        
+        // Initial check
+        checkSession();
+        
+        // Store interval ID for cleanup
+        window.sessionCheckInterval = sessionCheckInterval;
+    })();
     </script>
 </body>
 </html>

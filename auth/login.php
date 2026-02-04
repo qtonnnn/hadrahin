@@ -8,6 +8,15 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+// ============================================
+// ANTI-CACHE HEADERS - PENTING UNTUK KEAMANAN
+// ============================================
+// Headers ini mencegah browser menyimpan cache halaman login
+// sehingga saat logout dan tekan back, halaman akan redirect ke login
+header('Cache-Control: no-store, no-cache, must-revalidate, private');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // Tentukan BASE_URL jika belum ada
 if (!defined('BASE_URL')) {
     $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/hadrahin';
@@ -509,6 +518,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         button.style.cursor = 'not-allowed';
     })();
     <?php endif; ?>
+    
+    // ========================================
+    // ANTI-BACK BUTTON SCRIPT
+    // ========================================
+    // Mencegah user kembali ke halaman cached setelah logout
+    // dengan menghapus history dan mengunci navigasi
+    (function() {
+        // Replace current history entry dengan halaman login
+        // sehingga back button tidak bisa kembali ke halaman sebelumnya
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+        
+        // Prevent back navigation using popstate event
+        window.addEventListener('popstate', function(event) {
+            // Setiap kali user tekan back, replace state lagi
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+            // Redirect ke halaman login jika terdeteksi upaya back
+            window.location.href = '<?= BASE_URL ?>/auth/login.php<?= isset($_GET['logout']) ? '?logout=success' : '' ?>';
+        });
+        
+        // Additional protection: Clear any cached pages inbfcache
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                // Page was loaded from bfcache (back-forward cache)
+                window.location.reload();
+            }
+        };
+        
+        // Prevent keyboard shortcuts for back navigation
+        document.addEventListener('keydown', function(e) {
+            // Block Alt+Left Arrow (browser back)
+            if (e.altKey && e.key === 'ArrowLeft') {
+                e.preventDefault();
+                window.location.href = '<?= BASE_URL ?>/auth/login.php<?= isset($_GET['logout']) ? '?logout=success' : '' ?>';
+            }
+        });
+    })();
     </script>
 </body>
 </html>

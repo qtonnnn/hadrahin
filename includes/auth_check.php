@@ -5,6 +5,15 @@
  * Include di halaman yang memerlukan login
  */
 
+// ============================================
+// ANTI-CACHE HEADERS - PENTING UNTUK KEAMANAN
+// ============================================
+// Headers ini mencegah browser menyimpan cache halaman
+// sehingga setelah logout, halaman tidak bisa diakses via back button
+header('Cache-Control: no-store, no-cache, must-revalidate, private');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // Konfigurasi error yang aman untuk production
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -184,10 +193,21 @@ function secure_logout() {
 // AUTO-INCLUDE SETELAH SESSION START
 // ============================================
 
+// Tentukan BASE_URL jika belum ada (diperlukan untuk redirect)
+if (!defined('BASE_URL')) {
+    $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/hadrahin';
+    define('BASE_URL', $base_url);
+}
+
 // Jika user sudah login, jalankan semua cek keamanan
 if (isset($_SESSION['user_id'])) {
     regenerate_session();
     check_session_timeout();
     validate_session_fingerprint();
+} else {
+    // User TIDAK login - redirect ke login
+    // Gunakan BASE_URL untuk path yang konsisten dari lokasi manapun
+    header('Location: ' . BASE_URL . '/auth/login.php');
+    exit;
 }
 

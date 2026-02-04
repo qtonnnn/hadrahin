@@ -129,6 +129,35 @@ if (strpos($_SERVER['PHP_SELF'], '/dashboard/') !== false) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Immediate redirect if not logged in (prevents cached page flash) -->
+    <script>
+    (function() {
+        var checkSession = function() {
+            fetch('<?= BASE_URL ?>/auth/check_session.php')
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (!data.logged_in) {
+                        window.location.href = '<?= BASE_URL ?>/auth/login.php?session_expired=1';
+                    }
+                })
+                .catch(function() {
+                    // On error, redirect for safety
+                    window.location.href = '<?= BASE_URL ?>/auth/login.php?session_expired=1';
+                });
+        };
+        
+        // Check immediately
+        checkSession();
+        
+        // Then check periodically
+        setInterval(checkSession, 3000);
+    })();
+    </script>
+    
     <title><?= $page_title ?> - Hadrah App</title>
     
     <!-- Bootstrap CSS -->
