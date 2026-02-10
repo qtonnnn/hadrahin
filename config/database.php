@@ -2,7 +2,9 @@
 // Base URL Configuration - only define in web context
 if (php_sapi_name() !== 'cli' && isset($_SERVER['HTTP_HOST'])) {
     $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/hadrahin';
-    define('BASE_URL', $base_url);
+    if (!defined('BASE_URL')) {
+        define('BASE_URL', $base_url);
+    }
 }
 
 // Database Configuration

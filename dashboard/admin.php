@@ -17,11 +17,19 @@ header('Expires: 0');
 session_start();
 require_once '../config/database.php';
 
+// Initialize error handler untuk production-safe error handling
+require_once '../includes/error_handler.php';
+ErrorHandler::init();
+
 // Include auth check untuk keamanan session
 require_once '../includes/auth_check.php';
 
 // Ambil data user dari database
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'] ?? null;
+if (empty($user_id)) {
+    header('Location: ' . BASE_URL . '/auth/login.php');
+    exit;
+}
 $query = "SELECT * FROM user WHERE id_user = ?";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$user_id]);
@@ -127,19 +135,19 @@ $data_bulan_lalu = $stmt->fetch(PDO::FETCH_ASSOC);
 $stats['keuangan']['bulan_lalu_pemasukan'] = $data_bulan_lalu['pemasukan'];
 $stats['keuangan']['bulan_lalu_pengeluaran'] = $data_bulan_lalu['pengeluaran'];
 
-// Kategori Pemasukan Breakdown
-$stmt = $pdo->query("SELECT kategori, COALESCE(SUM(jumlah), 0) as total 
+// Kategori Pemasukan Breakdown (berdasarkan keterangan)
+$stmt = $pdo->query("SELECT keterangan, COALESCE(SUM(jumlah), 0) as total 
                      FROM keuangan 
-                     WHERE tipe = 'pemasukan' AND kategori IS NOT NULL 
-                     GROUP BY kategori 
+                     WHERE tipe = 'pemasukan' AND keterangan IS NOT NULL 
+                     GROUP BY keterangan 
                      ORDER BY total DESC");
 $stats['keuangan']['kategori_pemasukan'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Kategori Pengeluaran Breakdown
-$stmt = $pdo->query("SELECT kategori, COALESCE(SUM(jumlah), 0) as total 
+// Kategori Pengeluaran Breakdown (berdasarkan keterangan)
+$stmt = $pdo->query("SELECT keterangan, COALESCE(SUM(jumlah), 0) as total 
                      FROM keuangan 
-                     WHERE tipe = 'pengeluaran' AND kategori IS NOT NULL 
-                     GROUP BY kategori 
+                     WHERE tipe = 'pengeluaran' AND keterangan IS NOT NULL 
+                     GROUP BY keterangan 
                      ORDER BY total DESC");
 $stats['keuangan']['kategori_pengeluaran'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -270,14 +278,23 @@ $stmt = $pdo->query("SELECT id_alat, nama_alat, (jumlah_baik + jumlah_rusak) as 
                      LIMIT 3");
 $stats['alat']['most_stok'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Alat yang sering dipinjam
-$stmt = $pdo->query("SELECT a.id_alat, a.nama_alat, COUNT(ap.id_alat_pengguna) as total_dipinjam
-                     FROM alat a 
-                     LEFT JOIN alat_pengguna ap ON a.id_alat = ap.id_alat AND ap.status = 'aktif'
-                     GROUP BY a.id_alat 
-                     ORDER BY total_dipinjam DESC 
-                     LIMIT 3");
-$stats['alat']['sering_dipinjam'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Alat yang sering dipinjam (dengan error handling untuk table yang mungkin belum ada)
+try {
+    $stmt = $pdo->query("SELECT a.id_alat, a.nama_alat, COUNT(ap.id_alat_pengguna) as total_dipinjam
+                         FROM alat a 
+                         LEFT JOIN alat_pengguna ap ON a.id_alat = ap.id_alat AND ap.status = 'aktif'
+                         GROUP BY a.id_alat 
+                         ORDER BY total_dipinjam DESC 
+                         LIMIT 3");
+    $stats['alat']['sering_dipinjam'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // Jika table alat_pengguna belum ada, tampilkan alat dengan stok terbanyak saja
+    $stmt = $pdo->query("SELECT id_alat, nama_alat, (jumlah_baik + jumlah_rusak) as total_stok 
+                         FROM alat 
+                         ORDER BY total_stok DESC 
+                         LIMIT 3");
+    $stats['alat']['sering_dipinjam'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 // Recent Activities
 $recent_activities = [];
@@ -1681,7 +1698,7 @@ body {
                                 <?= strtoupper(substr($user['username'] ?? 'A', 0, 2)) ?>
                             </div>
                             <div class="user-details">
-                                <div class="user-name"><?= htmlspecialchars(explode(' ', $user['nama_lengkap'] ?? $_SESSION['nama'])[0]) ?></div>
+                                <div class="user-name"><?= htmlspecialchars(explode(' ', ($user['nama_lengkap'] ?? $_SESSION['nama'] ?? 'Admin'))[0]) ?></div>
                                 <div class="user-role">Administrator</div>
                             </div>
                             <i class="fas fa-chevron-down ms-2"></i>
@@ -1708,7 +1725,7 @@ body {
                     <div class="welcome-card">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <h2 class="mb-2">Selamat Datang, <?= htmlspecialchars(explode(' ', $user['nama_lengkap'] ?? $_SESSION['nama'])[0]) ?>! 👋</h2>
+                                <h2 class="mb-2">Selamat Datang, <?= htmlspecialchars(explode(' ', ($user['nama_lengkap'] ?? $_SESSION['nama'] ?? 'Admin'))[0]) ?>! 👋</h2>
                                 <p class="mb-0 opacity-75">Ini adalah dashboard admin untuk mengelola seluruh sistem informasi grup hadrah.</p>
                             </div>
                             <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -2185,7 +2202,7 @@ body {
                                         ?>
                                             <div class="mb-3">
                                                 <div class="d-flex justify-content-between mb-1">
-                                                    <span><?= htmlspecialchars($kat['kategori']) ?></span>
+                                                    <span><?= htmlspecialchars($kat['keterangan'] ?? 'Tanpa Keterangan') ?></span>
                                                     <span class="fw-bold">Rp <?= number_format($kat['total'], 0, ',', '.') ?></span>
                                                 </div>
                                                 <div class="progress" style="height: 10px;">
@@ -2227,7 +2244,7 @@ body {
                                         ?>
                                             <div class="mb-3">
                                                 <div class="d-flex justify-content-between mb-1">
-                                                    <span><?= htmlspecialchars($kat['kategori']) ?></span>
+                                                    <span><?= htmlspecialchars($kat['keterangan'] ?? 'Tanpa Keterangan') ?></span>
                                                     <span class="fw-bold">Rp <?= number_format($kat['total'], 0, ',', '.') ?></span>
                                                 </div>
                                                 <div class="progress" style="height: 10px;">
@@ -2284,7 +2301,7 @@ body {
                                                                     <?= ucfirst($trx['tipe']) ?>
                                                                 </span>
                                                             </td>
-                                                            <td><?= htmlspecialchars($trx['kategori'] ?? '-') ?></td>
+                                                            <td><?= htmlspecialchars($trx['kategori'] ?? $trx['keterangan'] ?? '-') ?></td>
                                                             <td class="fw-bold <?= $trx['tipe'] === 'pemasukan' ? 'text-success' : 'text-danger' ?>">
                                                                 Rp <?= number_format($trx['jumlah'], 0, ',', '.') ?>
                                                             </td>

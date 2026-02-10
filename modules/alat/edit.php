@@ -48,7 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $total_alat = (int)($_POST['total_alat'] ?? 1);
     $jumlah_baik = (int)($_POST['jumlah_baik'] ?? 0);
     $jumlah_rusak = (int)($_POST['jumlah_rusak'] ?? 0);
-    $pengguna_terpilih = $_POST['pengguna'] ?? [];
+    // Ambil pengguna dari hidden input JSON
+    $pengguna_json = $_POST['pengguna'] ?? '';
+    $pengguna_terpilih = !empty($pengguna_json) ? json_decode($pengguna_json, true) : [];
+    
+    // Fallback jika pengguna_checkbox[] ada (misal form resubmit)
+    if (empty($pengguna_terpilih) && isset($_POST['pengguna_checkbox'])) {
+        $pengguna_terpilih = array_map('intval', $_POST['pengguna_checkbox']);
+    }
+    
     $keterangan = trim($_POST['keterangan'] ?? '');
     
     $errors = [];
@@ -155,7 +163,8 @@ include '../../includes/header.php';
                     </div>
                 <?php endif; ?>
                 
-                <form method="POST" autocomplete="off" id="alatForm">
+<form method="POST" autocomplete="off" id="alatForm">
+                    <input type="hidden" name="pengguna" id="penggunaSelected" value='<?= htmlspecialchars(json_encode($pengguna_terpilih ?: $pengguna_ids)) ?>'>
                     <h6 class="text-primary mb-3"><i class="fas fa-music me-1"></i> Informasi Alat</h6>
                     
                     <div class="mb-3">
@@ -238,7 +247,7 @@ include '../../includes/header.php';
                     <div class="mb-3">
                         <button type="button" class="btn btn-outline-primary" onclick="openPenggunaModal()">
                             <i class="fas fa-users-cog me-1"></i> 
-                            Pilih Anggota <span class="badge bg-primary ms-1" id="selectedCount"><?= count($pengguna_ids) ?></span> aktif
+                            Pilih Anggota <span class="badge bg-primary ms-1" id="selectedCount"><?= count($pengguna_terpilih ?: $pengguna_ids) ?></span> aktif
                         </button>
                         <div class="form-text">Pengguna yang dihapus akan ditandai sebagai "Dikembalikan"</div>
                     
@@ -377,14 +386,14 @@ include '../../includes/header.php';
                                             <div class="row align-items-center">
                                                 <div class="col-auto">
                                                     <div class="form-check">
-                                                        <input class="form-check-input pengguna-checkbox" 
+                                                    <input class="form-check-input pengguna-checkbox" 
                                                                type="checkbox" 
-                                                               name="pengguna[]" 
+                                                               name="pengguna_checkbox[]" 
                                                                value="<?= $user['id_user'] ?>" 
                                                                id="pengguna_<?= $user['id_user'] ?>"
                                                                onchange="updatePenggunaSelection()"
                                                                style="width: 1.2em; height: 1.2em;"
-                                                               <?= (in_array($user['id_user'], ($_POST['pengguna'] ?? $pengguna_ids))) ? 'checked' : '' ?>>
+                                                               <?= (in_array($user['id_user'], ($pengguna_terpilih ?: $pengguna_ids))) ? 'checked' : '' ?>>
                                                     </div>
                                                 </div>
                                                 <div class="col-auto">
@@ -715,7 +724,21 @@ function clearAllPengguna() {
 
 // Fungsi untuk simpan seleksi dan tutup modal
 function saveSelection() {
-    // Update preview setelah modal ditutup
+    // Simpan state checkbox saat ini sebelum modal ditutup
+    initialCheckboxState = {};
+    const selectedIds = [];
+    document.querySelectorAll('.pengguna-checkbox').forEach(cb => {
+        const userId = cb.value;
+        initialCheckboxState[userId] = cb.checked;
+        if (cb.checked) {
+            selectedIds.push(userId);
+        }
+    });
+    
+    // Simpan ke hidden input agar tersubmit dengan form
+    document.getElementById('penggunaSelected').value = JSON.stringify(selectedIds);
+    
+    // Update preview
     updatePreview();
     // Tutup modal
     bootstrap.Modal.getInstance(document.getElementById('penggunaModal')).hide();
@@ -812,6 +835,21 @@ function submitForm() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi checkbox berdasarkan hidden input
+    try {
+        const penggunaJson = document.getElementById('penggunaSelected').value;
+        if (penggunaJson) {
+            const selectedIds = JSON.parse(penggunaJson);
+            document.querySelectorAll('.pengguna-checkbox').forEach(cb => {
+                if (selectedIds.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+        }
+    } catch (e) {
+        console.error('Error initializing checkboxes:', e);
+    }
+    
     // Set initial count
     updatePenggunaSelection();
     validateTotal();

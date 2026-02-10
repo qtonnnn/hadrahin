@@ -1,145 +1,20 @@
-
-[2026-01-25 16:53:09] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-25 16:55:23] [ConflictException] [CONFLICT] Jadwal latihan pada tanggal dan jam tersebut sudah ada
-[2026-01-25 16:56:16] [ConflictException] [CONFLICT] Jadwal latihan pada tanggal dan jam tersebut sudah ada
-[2026-01-25 16:57:51] [ConflictException] [CONFLICT] Jadwal latihan pada tanggal dan jam tersebut sudah ada
-[26-Jan-2026 16:29:01 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[26-Jan-2026 16:29:01 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 291
-[26-Jan-2026 16:29:01 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 291
-[26-Jan-2026 16:29:01 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 318
-[26-Jan-2026 16:29:01 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 318
-[26-Jan-2026 16:32:18 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[26-Jan-2026 16:32:18 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 291
-[26-Jan-2026 16:32:18 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 291
-[26-Jan-2026 16:32:18 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 318
-[26-Jan-2026 16:32:18 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 318
-[2026-01-26 16:32:52] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-26 16:51:52] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[26-Jan-2026 16:52:32 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[26-Jan-2026 16:52:32 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[26-Jan-2026 16:52:32 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[26-Jan-2026 16:52:32 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[26-Jan-2026 16:52:32 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[2026-01-26 16:52:41] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-26 16:53:17] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-26 16:53:47] [ConflictException] [CONFLICT] Jadwal latihan pada tanggal dan jam tersebut sudah ada
-[2026-01-26 16:55:35] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-26 16:55:55] [ConflictException] [CONFLICT] Jadwal latihan pada tanggal dan jam tersebut sudah ada
-[2026-01-26 16:57:04] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:18:37] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[27-Jan-2026 04:22:11 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[27-Jan-2026 04:22:11 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[27-Jan-2026 04:22:11 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[27-Jan-2026 04:22:11 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[27-Jan-2026 04:22:11 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[2026-01-27 04:22:30] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:24:49] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:25:46] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:29:59] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:40:09] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:40:38] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:40:58] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 04:41:50] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 10:54:17] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[27-Jan-2026 10:55:00 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[27-Jan-2026 10:55:00 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[27-Jan-2026 10:55:00 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[27-Jan-2026 10:55:00 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[27-Jan-2026 10:55:00 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[2026-01-27 10:55:05] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 10:55:17] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 10:56:24] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[27-Jan-2026 11:02:31 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[27-Jan-2026 11:02:31 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[27-Jan-2026 11:02:31 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 292
-[27-Jan-2026 11:02:31 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[27-Jan-2026 11:02:31 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 319
-[2026-01-27 11:02:36] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 16:21:00] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-27 16:22:08] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-28 01:30:19] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-28 12:10:35] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-28 12:51:35] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[28-Jan-2026 12:52:09 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[28-Jan-2026 12:52:09 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1372
-[28-Jan-2026 12:52:09 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1372
-[28-Jan-2026 12:52:09 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1399
-[28-Jan-2026 12:52:09 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1399
-[2026-01-28 12:52:13] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-28 12:52:19] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[28-Jan-2026 16:03:26 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[28-Jan-2026 16:03:26 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1372
-[28-Jan-2026 16:03:26 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1372
-[28-Jan-2026 16:03:26 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1399
-[28-Jan-2026 16:03:26 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1399
-[2026-01-28 16:03:35] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-28 16:23:56] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-28 16:31:06] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-28 17:18:13] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 01:23:28] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 01:25:00] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 01:34:42] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 01:34:46] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 01:37:31] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 10:16:05] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 15:22:54] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 15:30:30] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 16:03:57] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 16:58:48] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-29 17:25:58] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-01-30 10:05:00] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 12:41:39] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 14:06:54] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 14:32:09] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 14:50:02] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 14:57:47] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 15:01:17] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 15:08:27] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 16:44:48] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 17:00:01] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 17:08:23] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 17:23:08] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 18:08:02] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 18:08:37] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-01 18:09:16] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:52:01] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:58:58] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:04] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:06] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:09] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:12] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:15] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:18] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:21] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:23] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:26] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:29] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 06:59:32] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 07:04:36] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 07:19:19] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 15:27:24] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 15:28:22] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 16:58:27] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-02 17:00:15] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 01:25:04] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 04:25:41] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 04:25:44] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 04:26:06] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 04:32:03] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 04:32:10] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 14:51:33] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 15:11:45] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 15:15:49] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[03-Feb-2026 16:01:51 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[03-Feb-2026 16:01:51 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1648
-[03-Feb-2026 16:01:51 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1648
-[03-Feb-2026 16:01:51 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1675
-[03-Feb-2026 16:01:51 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1675
-[03-Feb-2026 16:01:56 Europe/Berlin] PHP Warning:  Undefined array key "user_id" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 15
-[03-Feb-2026 16:01:56 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1648
-[03-Feb-2026 16:01:56 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1648
-[03-Feb-2026 16:01:56 Europe/Berlin] PHP Warning:  Undefined array key "nama" in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1675
-[03-Feb-2026 16:01:56 Europe/Berlin] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/admin.php on line 1675
-[2026-02-03 16:02:02] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 17:27:52] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
-[2026-02-03 18:10:46] [ERROR] [E_WARNING] Constant BASE_URL already defined in /opt/lampp/htdocs/hadrahin/config/database.php on line 5
+[10-Feb-2026 17:20:01 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2033
+[10-Feb-2026 17:20:01 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2033
+[10-Feb-2026 17:20:01 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to undefined function getContrastColor() in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php:2102
+Stack trace:
+#0 {main}
+  thrown in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2102
+[10-Feb-2026 17:22:43 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:22:43 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:29:30 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:29:30 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:31:56 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:31:56 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:39:00 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:39:00 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2048
+[10-Feb-2026 17:44:37 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[10-Feb-2026 17:44:37 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[10-Feb-2026 17:47:28 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[10-Feb-2026 17:47:28 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[10-Feb-2026 17:47:35 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[10-Feb-2026 17:47:35 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943

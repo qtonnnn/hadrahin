@@ -172,14 +172,14 @@ include '../../includes/header.php';
                 <div class="col-md-3">
                     <label class="form-label small text-muted">Tanggal Mulai:</label>
                     <input type="date" name="start_date" class="form-control" 
-                           value="<?= htmlspecialchars($start_date) ?>" max="<?= date('Y-m-d') ?>">
+                           value="<?= htmlspecialchars($start_date) ?>">
                 </div>
                 
                 <!-- End Date -->
                 <div class="col-md-3">
                     <label class="form-label small text-muted">Tanggal Akhir:</label>
                     <input type="date" name="end_date" class="form-control" 
-                           value="<?= htmlspecialchars($end_date) ?>" max="<?= date('Y-m-d') ?>">
+                           value="<?= htmlspecialchars($end_date) ?>">
                 </div>
                 
                 <!-- Search -->
@@ -251,7 +251,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         </tr>
                     <?php else: ?>
                         <?php foreach ($bookings as $index => $booking): ?>
-                            <tr>
+                            <?php 
+                            $event_date = strtotime($booking['tanggal_acara']);
+                            $today = strtotime(date('Y-m-d'));
+                            $is_past = $event_date < $today && $booking['status'] != 'selesai';
+                            ?>
+                            <tr class="<?= $is_past ? 'opacity-50' : '' ?>">
                                 <td class="text-center text-muted"><?= $offset + $index + 1 ?></td>
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -269,6 +274,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?= date('d/m/Y', strtotime($booking['tanggal_acara'])) ?>
                                     <br>
                                     <small class="text-muted"><?= date('H:i', strtotime($booking['jam_mulai'])) ?> WIB</small>
+                                    <?php if ($is_past): ?>
+                                        <br>
+                                        <span class="badge bg-dark mt-1">
+                                            <i class="fas fa-calendar-x me-1"></i>Terlewat
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td><?= htmlspecialchars($booking['lokasi']) ?></td>
                                 <td>
@@ -284,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </td>
                                 <td class="text-center">
                                     <button class="btn btn-sm btn-outline-info" 
-                                            onclick="viewBooking(<?= $booking['id_booking'] ?>)"
+                                            onclick="viewBooking(<?= $booking['id_booking'] ?>, '<?= $booking['tanggal_acara'] ?>')"
                                             title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -297,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         $today = strtotime(date('Y-m-d'));
                                         $can_finish = $booking['status'] == 'diterima' && $event_date <= $today;
                                         ?>
-                                        <?php if ($booking['status'] != 'selesai'): ?>
+                                        <?php if ($booking['status'] == 'menunggu'): ?>
                                             <button class="btn btn-sm btn-outline-success" 
                                                     onclick="updateStatus(<?= $booking['id_booking'] ?>, 'diterima')"
                                                     title="Terima">
@@ -348,7 +359,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             <?php else: ?>
                 <?php foreach ($bookings as $index => $booking): ?>
-                    <div class="border-bottom p-3">
+                    <?php 
+                    $event_date = strtotime($booking['tanggal_acara']);
+                    $today = strtotime(date('Y-m-d'));
+                    $is_past = $event_date < $today && $booking['status'] != 'selesai';
+                    ?>
+                    <div class="border-bottom p-3 <?= $is_past ? 'opacity-50' : '' ?>">
                         <div class="d-flex align-items-start mb-2">
                             <div class="bg-info bg-opacity-25 text-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                                 <i class="fas fa-calendar"></i>
@@ -371,6 +387,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span><?= date('H:i', strtotime($booking['jam_mulai'])) ?> WIB</span>
                             </div>
                         </div>
+                        <?php if ($is_past): ?>
+                            <div class="mb-2">
+                                <span class="badge bg-dark">
+                                    <i class="fas fa-calendar-x me-1"></i>Tanggal Acara Telah Terlewat
+                                </span>
+                            </div>
+                        <?php endif; ?>
                         <div class="mb-2">
                             <small class="text-muted d-block"><i class="fas fa-map-marker-alt me-1"></i>Lokasi</small>
                             <span><?= htmlspecialchars($booking['lokasi']) ?></span>
@@ -380,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="badge bg-secondary"><?= htmlspecialchars($booking['dresscode_name'] ?? 'Tidak ada') ?></span>
                         </div>
                         <div class="d-flex flex-wrap gap-1 mt-2">
-                            <button class="btn btn-sm btn-outline-info" onclick="viewBooking(<?= $booking['id_booking'] ?>)">
+                            <button class="btn btn-sm btn-outline-info" onclick="viewBooking(<?= $booking['id_booking'] ?>, '<?= $booking['tanggal_acara'] ?>')">
                                 <i class="fas fa-eye me-1"></i>Detail
                             </button>
                             <?php if ($_SESSION['peran'] == 'admin' || $_SESSION['peran'] == 'pembina'): ?>
@@ -489,58 +512,153 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $stats[$row['status']] = $row['count'];
     }
+    
+    // Get past events count (events with date before today and status != 'selesai')
+    try {
+        $today = date('Y-m-d');
+        if (!empty($stats_where)) {
+            $past_stmt = $pdo->prepare("SELECT COUNT(*) as count FROM booking_acara WHERE tanggal_acara < ? AND status != 'selesai' {$stats_where}");
+            $past_params = array_merge([$today], $stats_params);
+            $past_stmt->execute($past_params);
+        } else {
+            $past_stmt = $pdo->prepare("SELECT COUNT(*) as count FROM booking_acara WHERE tanggal_acara < ? AND status != 'selesai'");
+            $past_stmt->execute([$today]);
+        }
+        $stats['terlewat'] = $past_stmt->fetchColumn();
+    } catch (PDOException $e) {
+        $stats['terlewat'] = 0;
+    }
 } catch (PDOException $e) {
-    $stats = ['menunggu' => 0, 'diterima' => 0, 'ditolak' => 0, 'selesai' => 0];
+    $stats = ['menunggu' => 0, 'diterima' => 0, 'ditolak' => 0, 'selesai' => 0, 'terlewat' => 0];
 }
+
+// Calculate total for percentage
+$total_stats = array_sum($stats);
+$menunggu_pct = $total_stats > 0 ? round(($stats['menunggu'] ?? 0) / $total_stats * 100) : 0;
+$diterima_pct = $total_stats > 0 ? round(($stats['diterima'] ?? 0) / $total_stats * 100) : 0;
+$ditolak_pct = $total_stats > 0 ? round(($stats['ditolak'] ?? 0) / $total_stats * 100) : 0;
+$selesai_pct = $total_stats > 0 ? round(($stats['selesai'] ?? 0) / $total_stats * 100) : 0;
 ?>
-<div class="row mt-4">
-    <div class="col-md-3 col-6 mb-3">
-        <div class="card bg-warning text-dark">
+<div class="row mt-4 mb-4">
+    <div class="col-12">
+        <h6 class="text-muted mb-3"><i class="fas fa-chart-bar me-2"></i>Statistik Booking Acara</h6>
+    </div>
+</div>
+
+<!-- Main Stats Cards Row -->
+<div class="row g-3 mb-4">
+    <!-- Menunggu Card -->
+    <div class="col-md-3 col-6">
+        <div class="card bg-warning text-dark h-100 border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-clock fa-2x me-3"></i>
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="h4 mb-0"><?= $stats['menunggu'] ?? 0 ?></div>
-                        <small>Menunggu</small>
+                        <div class="h2 mb-0 fw-bold"><?= $stats['menunggu'] ?? 0 ?></div>
+                        <small class="text-dark opacity-75">Menunggu</small>
+                        <div class="mt-2">
+                            <div class="progress" style="height: 4px; opacity: 0.5;">
+                                <div class="progress-bar bg-dark" style="width: <?= $menunggu_pct ?>%"></div>
+                            </div>
+                            <small class="text-dark opacity-75"><?= $menunggu_pct ?>% dari total</small>
+                        </div>
+                    </div>
+                    <div class="bg-dark bg-opacity-10 rounded p-2">
+                        <i class="fas fa-clock fa-lg"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-6 mb-3">
-        <div class="card bg-success text-white">
+    
+    <!-- Diterima Card -->
+    <div class="col-md-3 col-6">
+        <div class="card bg-success text-white h-100 border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-check fa-2x me-3"></i>
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="h4 mb-0"><?= $stats['diterima'] ?? 0 ?></div>
-                        <small>Diterima</small>
+                        <div class="h2 mb-0 fw-bold"><?= $stats['diterima'] ?? 0 ?></div>
+                        <small class="text-white opacity-75">Diterima</small>
+                        <div class="mt-2">
+                            <div class="progress bg-white bg-opacity-25" style="height: 4px;">
+                                <div class="progress-bar bg-white" style="width: <?= $diterima_pct ?>%"></div>
+                            </div>
+                            <small class="text-white opacity-75"><?= $diterima_pct ?>% dari total</small>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded p-2">
+                        <i class="fas fa-check fa-lg"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-6 mb-3">
-        <div class="card bg-danger text-white">
+    
+    <!-- Ditolak Card -->
+    <div class="col-md-3 col-6">
+        <div class="card bg-danger text-white h-100 border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-times fa-2x me-3"></i>
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="h4 mb-0"><?= $stats['ditolak'] ?? 0 ?></div>
-                        <small>Ditolak</small>
+                        <div class="h2 mb-0 fw-bold"><?= $stats['ditolak'] ?? 0 ?></div>
+                        <small class="text-white opacity-75">Ditolak</small>
+                        <div class="mt-2">
+                            <div class="progress bg-white bg-opacity-25" style="height: 4px;">
+                                <div class="progress-bar bg-white" style="width: <?= $ditolak_pct ?>%"></div>
+                            </div>
+                            <small class="text-white opacity-75"><?= $ditolak_pct ?>% dari total</small>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded p-2">
+                        <i class="fas fa-times fa-lg"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-6 mb-3">
-        <div class="card bg-info text-white">
+    
+    <!-- Selesai Card -->
+    <div class="col-md-3 col-6">
+        <div class="card bg-info text-white h-100 border-0 shadow-sm">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-check-double fa-2x me-3"></i>
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="h4 mb-0"><?= $stats['selesai'] ?? 0 ?></div>
-                        <small>Selesai</small>
+                        <div class="h2 mb-0 fw-bold"><?= $stats['selesai'] ?? 0 ?></div>
+                        <small class="text-white opacity-75">Selesai</small>
+                        <div class="mt-2">
+                            <div class="progress bg-white bg-opacity-25" style="height: 4px;">
+                                <div class="progress-bar bg-white" style="width: <?= $selesai_pct ?>%"></div>
+                            </div>
+                            <small class="text-white opacity-75"><?= $selesai_pct ?>% dari total</small>
+                        </div>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded p-2">
+                        <i class="fas fa-check-double fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Terlewat Card - Full Width on Desktop -->
+<div class="row mt-2">
+    <div class="col-12">
+        <div class="card bg-dark text-white border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white bg-opacity-25 rounded p-2 me-3">
+                            <i class="fas fa-calendar-xmark fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="h3 mb-0 fw-bold"><?= $stats['terlewat'] ?? 0 ?></div>
+                            <small class="text-white opacity-75">Acara Terlewat</small>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-white opacity-75 d-block">Total Booking</small>
+                        <div class="h4 mb-0"><?= $total_stats ?></div>
                     </div>
                 </div>
             </div>
@@ -549,6 +667,8 @@ try {
 </div>
 
 <!-- View Detail Modal -->
+
+
 <div class="modal fade" id="viewModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -598,11 +718,35 @@ try {
 </div>
 
 <script>
-    function viewBooking(id) {
+    function viewBooking(id, tanggalAcara) {
         fetch(`view_ajax.php?id=${id}`)
             .then(response => response.text())
             .then(html => {
-                document.getElementById('viewContent').innerHTML = html;
+                // Check if event date has passed
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const eventDate = new Date(tanggalAcara);
+                const isPast = eventDate < today;
+                
+                // Add past event notification if applicable
+                let contentWithNotification = html;
+                if (isPast) {
+                    const pastNotification = `
+                        <div class="alert alert-dark border-2 border-dark mb-3" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <strong><i class="fas fa-calendar-x me-2"></i>Acara Sudah Terlewat</strong>
+                                    <br>
+                                    <small>Tanggal acara ini sudah berlalu. Dokumentasi tidak dapat diakses.</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    contentWithNotification = pastNotification + html;
+                }
+                
+                document.getElementById('viewContent').innerHTML = contentWithNotification;
                 
                 // Check status from the HTML content
                 const statusMatch = html.match(/status\.push\('(\w+?)'\)/);
@@ -610,30 +754,33 @@ try {
                 
                 const dokumentasiBtn = document.getElementById('dokumentasiLink');
                 
-                // Disable dokumentasi button if status is not 'selesai'
+                // Disable dokumentasi button if status is not 'selesai' or if date has passed
                 if (statusBadge) {
                     const statusText = statusBadge.textContent.trim();
-                    if (statusText !== 'Selesai') {
+                    if (statusText !== 'Selesai' || isPast) {
                         dokumentasiBtn.classList.add('disabled');
                         dokumentasiBtn.classList.remove('btn-info', 'text-white');
                         dokumentasiBtn.classList.add('btn-secondary');
                         dokumentasiBtn.setAttribute('aria-disabled', 'true');
+                        dokumentasiBtn.title = isPast ? 'Tidak dapat diakses - Acara sudah terlewat' : 'Hanya tersedia untuk acara yang sudah selesai';
                         dokumentasiBtn.onclick = function(e) { e.preventDefault(); };
                     } else {
                         dokumentasiBtn.classList.remove('disabled');
                         dokumentasiBtn.classList.add('btn-info', 'text-white');
                         dokumentasiBtn.classList.remove('btn-secondary');
                         dokumentasiBtn.removeAttribute('aria-disabled');
+                        dokumentasiBtn.title = 'Lihat Dokumentasi';
                         dokumentasiBtn.onclick = null;
                         dokumentasiBtn.href = `dokumentasi.php?id=${id}`;
                     }
                 } else {
                     // Fallback: check if Selesai badge exists in modal
-                    if (html.includes('Selesai')) {
+                    if (html.includes('Selesai') && !isPast) {
                         dokumentasiBtn.classList.remove('disabled');
                         dokumentasiBtn.classList.add('btn-info', 'text-white');
                         dokumentasiBtn.classList.remove('btn-secondary');
                         dokumentasiBtn.removeAttribute('aria-disabled');
+                        dokumentasiBtn.title = 'Lihat Dokumentasi';
                         dokumentasiBtn.onclick = null;
                         dokumentasiBtn.href = `dokumentasi.php?id=${id}`;
                     } else {
@@ -641,6 +788,7 @@ try {
                         dokumentasiBtn.classList.remove('btn-info', 'text-white');
                         dokumentasiBtn.classList.add('btn-secondary');
                         dokumentasiBtn.setAttribute('aria-disabled', 'true');
+                        dokumentasiBtn.title = isPast ? 'Tidak dapat diakses - Acara sudah terlewat' : 'Hanya tersedia untuk acara yang sudah selesai';
                         dokumentasiBtn.onclick = function(e) { e.preventDefault(); };
                     }
                 }

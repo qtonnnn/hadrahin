@@ -356,10 +356,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <a href="edit.php?id=<?= $jadwal['id_jadwal'] ?>" class="btn btn-sm btn-outline-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <?php if (in_array($jadwal['status'], ['dibatalkan', 'selesai'])): ?>
+                                        <?php
+                                        // Check if attendance should be disabled
+                                        $jadwal_date = new DateTime($jadwal['tanggal']);
+                                        $today = new DateTime('today');
+                                        $is_before_date = $jadwal_date > $today;
+                                        
+                                        if (in_array($jadwal['status'], ['dibatalkan', 'selesai']) || $is_before_date): ?>
                                             <?php
                                             $tooltip_text = '';
-                                            if ($jadwal['status'] === 'dibatalkan') {
+                                            if ($is_before_date) {
+                                                $tooltip_text = 'Absensi belum dapat dilakukan karena tanggal latihan belum tiba';
+                                            } elseif ($jadwal['status'] === 'dibatalkan') {
                                                 $tooltip_text = 'Absensi tidak dapat dilakukan karena jadwal telah dibatalkan';
                                             } elseif ($jadwal['status'] === 'selesai') {
                                                 $tooltip_text = 'Absensi sudah dilakukan untuk jadwal ini';
@@ -449,10 +457,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <a href="edit.php?id=<?= $jadwal['id_jadwal'] ?>" class="btn btn-outline-warning btn-sm">
                                     <i class="fas fa-edit me-1"></i>Edit
                                 </a>
-                                <?php if (in_array($jadwal['status'], ['dibatalkan', 'selesai'])): ?>
+                                <?php
+                                // Check if attendance should be disabled
+                                $jadwal_date = new DateTime($jadwal['tanggal']);
+                                $today = new DateTime('today');
+                                $is_before_date = $jadwal_date > $today;
+                                
+                                if (in_array($jadwal['status'], ['dibatalkan', 'selesai']) || $is_before_date): ?>
                                     <?php
                                     $tooltip_text = '';
-                                    if ($jadwal['status'] === 'dibatalkan') {
+                                    if ($is_before_date) {
+                                        $tooltip_text = 'Absensi belum dapat dilakukan karena tanggal latihan belum tiba';
+                                    } elseif ($jadwal['status'] === 'dibatalkan') {
                                         $tooltip_text = 'Absensi tidak dapat dilakukan karena jadwal telah dibatalkan';
                                     } elseif ($jadwal['status'] === 'selesai') {
                                         $tooltip_text = 'Absensi sudah dilakukan untuk jadwal ini';
