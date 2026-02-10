@@ -19,6 +19,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Include database connection
+require_once __DIR__ . '/../config/database.php';
+
 /**
  * Fungsi: Cek apakah user sudah login
  * Jika belum, redirect ke halaman login
@@ -51,7 +54,7 @@ function regenerate_session() {
  */
 function check_session_timeout() {
     if (isset($_SESSION['LAST_ACTIVITY'])) {
-        $timeout = 3600; // 1 jam dalam detik
+        $timeout = 3630; // 1 jam dalam detik
         $elapsed = time() - $_SESSION['LAST_ACTIVITY'];
         
         if ($elapsed > $timeout) {
@@ -85,9 +88,30 @@ function validate_session_fingerprint() {
 
 /**
  * Fungsi: Generate fingerprint dari browser user
+ * PERBAIKAN: User-Agent tidak digunakan langsung karena bisa berubah saat
+ * DevTools switching device atau browser update. Gunakan hanya IP + user_id
+ * serta timestamp untuk menjaga session tetap stabil saat perubahan viewport.
  */
 function generate_fingerprint() {
-    return hash('sha256', $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . $_SESSION['user_id'] ?? '');
+    // Hanya gunakan IP dan user_id (stabil terhadap viewport change)
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $user_id = $_SESSION['user_id'] ?? 'guest';
+    
+    // Tambahkan salt dari konfigurasi untuk keamanan
+    $salt = defined('FINGERPRINT_SALT') ? FINGERPRINT_SALT : 'hadrah_default_salt_2024';
+    
+    return hash('sha256', $ip . $user_id . $salt);
+}
+
+/**
+ * Fungsi: Generate lightweight fingerprint yang stabil
+ * Cocok untuk mobile/desktop switching tanpa kehilangan session
+ */
+function generate_lightweight_fingerprint() {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $user_id = $_SESSION['user_id'] ?? 'guest';
+    
+    return hash('sha256', $ip . $user_id);
 }
 
 /**

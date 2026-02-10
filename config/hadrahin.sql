@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jan 19, 2026 at 12:55 PM
+-- Generation Time: Jan 21, 2026 at 03:06 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -32,7 +32,11 @@ CREATE TABLE `absen_latihan` (
   `id_jadwal` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
   `status_hadir` enum('hadir','izin','alpa') DEFAULT 'hadir',
-  `jam_absen` timestamp NULL DEFAULT current_timestamp()
+  `jam_absen` timestamp NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -46,7 +50,29 @@ CREATE TABLE `alat` (
   `nama_alat` varchar(100) NOT NULL,
   `jumlah_baik` int(11) DEFAULT 0,
   `jumlah_rusak` int(11) DEFAULT 0,
-  `id_user` int(11) DEFAULT NULL
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alat_pengguna`
+--
+
+CREATE TABLE `alat_pengguna` (
+  `id_alat_pengguna` int(11) NOT NULL,
+  `id_alat` int(11) NOT NULL,
+  `id_user` int(11) NOT NULL,
+  `tanggal_diberikan` date NOT NULL,
+  `status` enum('aktif','dikembalikan') DEFAULT 'aktif',
+  `keterangan` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -60,10 +86,17 @@ CREATE TABLE `booking_acara` (
   `id_user` int(11) DEFAULT NULL,
   `nama_acara` varchar(150) NOT NULL,
   `nama_pemesan` varchar(100) NOT NULL,
+  `no_hp_pemesan` varchar(20) DEFAULT NULL,
   `tanggal_acara` date NOT NULL,
+  `jam_mulai` time NOT NULL DEFAULT '00:00:00',
   `lokasi` varchar(150) NOT NULL,
   `id_dresscode` int(11) DEFAULT NULL,
-  `status` enum('menunggu','diterima','ditolak','selesai') DEFAULT 'menunggu'
+  `status` enum('menunggu','diterima','ditolak','selesai') DEFAULT 'menunggu',
+  `keterangan` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -76,7 +109,11 @@ CREATE TABLE `dokumentasi_acara` (
   `id_dokumentasi` int(11) NOT NULL,
   `id_booking` int(11) NOT NULL,
   `file_path` varchar(255) NOT NULL,
-  `keterangan` varchar(150) DEFAULT NULL
+  `keterangan` varchar(150) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -92,7 +129,9 @@ CREATE TABLE `dresscode` (
   `warna` varchar(50) DEFAULT NULL,
   `status` enum('aktif','nonaktif') DEFAULT 'aktif',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -106,7 +145,12 @@ CREATE TABLE `jadwal_latihan` (
   `tanggal` date NOT NULL,
   `jam_mulai` time NOT NULL,
   `lokasi` varchar(150) NOT NULL,
-  `status` enum('direncanakan','selesai','dibatalkan') DEFAULT 'direncanakan'
+  `status` enum('direncanakan','selesai','dibatalkan') DEFAULT 'direncanakan',
+  `catatan` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -121,7 +165,12 @@ CREATE TABLE `keuangan` (
   `tipe` enum('pemasukan','pengeluaran') NOT NULL,
   `jumlah` decimal(12,2) NOT NULL,
   `keterangan` text DEFAULT NULL,
-  `tanggal` date NOT NULL
+  `tanggal` date NOT NULL,
+  
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -135,16 +184,21 @@ CREATE TABLE `user` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nama_lengkap` varchar(100) NOT NULL,
+  `no_hp` varchar(20) DEFAULT NULL,
   `peran` enum('admin','pembina','anggota') DEFAULT 'anggota',
-  `status_aktif` tinyint(1) DEFAULT 1
+  `status_aktif` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_modified` int(11) DEFAULT NULL,
+  `user_record` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id_user`, `username`, `password`, `nama_lengkap`, `peran`, `status_aktif`) VALUES
-(1, 'adminn', '$2y$10$8wexZ0opk9ZQJ6l2Isn6G.Ocu3n6ccgpCXTy4e0u7hzadeFQrk1r6', 'adminaja', 'admin', 1);
+INSERT INTO `user` (`id_user`, `username`, `password`, `nama_lengkap`, `no_hp`, `peran`, `status_aktif`, `created_at`, `updated_at`, `user_modified`, `user_record`) VALUES
+(1, 'adminn', '$2y$10$8wexZ0opk9ZQJ6l2Isn6G.Ocu3n6ccgpCXTy4e0u7hzadeFQrk1r6', 'adminaja', NULL, 'admin', 1, '2026-01-21 01:38:16', '2026-01-21 01:38:16', NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -156,14 +210,36 @@ INSERT INTO `user` (`id_user`, `username`, `password`, `nama_lengkap`, `peran`, 
 ALTER TABLE `absen_latihan`
   ADD PRIMARY KEY (`id_absen`),
   ADD UNIQUE KEY `uniq_user_jadwal` (`id_jadwal`,`id_user`),
-  ADD KEY `fk_absen_user` (`id_user`);
+  ADD KEY `fk_absen_user` (`id_user`),
+  ADD KEY `idx_user_status` (`id_user`,`status_hadir`);
 
 --
 -- Indexes for table `alat`
 --
 ALTER TABLE `alat`
-  ADD PRIMARY KEY (`id_alat`),
-  ADD KEY `fk_alat_user` (`id_user`);
+  ADD PRIMARY KEY (`id_alat`);
+
+--
+-- Indexes for table `alat_pengguna`
+--
+ALTER TABLE `alat_pengguna`
+  ADD PRIMARY KEY (`id_alat_pengguna`),
+  ADD KEY `fk_alatp_alat` (`id_alat`),
+  ADD KEY `fk_alatp_user` (`id_user`),
+  ADD UNIQUE KEY `uniq_alat_user` (`id_alat`, `id_user`, `status`);
+
+--
+-- AUTO_INCREMENT for table `alat_pengguna`
+--
+ALTER TABLE `alat_pengguna`
+  MODIFY `id_alat_pengguna` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for table `alat_pengguna`
+--
+ALTER TABLE `alat_pengguna`
+  ADD CONSTRAINT `fk_alatp_alat` FOREIGN KEY (`id_alat`) REFERENCES `alat` (`id_alat`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_alatp_user` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE CASCADE;
 
 --
 -- Indexes for table `booking_acara`
@@ -171,7 +247,9 @@ ALTER TABLE `alat`
 ALTER TABLE `booking_acara`
   ADD PRIMARY KEY (`id_booking`),
   ADD KEY `fk_booking_user` (`id_user`),
-  ADD KEY `fk_booking_dresscode` (`id_dresscode`);
+  ADD KEY `fk_booking_dresscode` (`id_dresscode`),
+  ADD KEY `idx_status_tanggal` (`status`,`tanggal_acara`),
+  ADD KEY `idx_tanggal` (`tanggal_acara`);
 
 --
 -- Indexes for table `dokumentasi_acara`
@@ -190,21 +268,25 @@ ALTER TABLE `dresscode`
 -- Indexes for table `jadwal_latihan`
 --
 ALTER TABLE `jadwal_latihan`
-  ADD PRIMARY KEY (`id_jadwal`);
+  ADD PRIMARY KEY (`id_jadwal`),
+  ADD KEY `idx_tanggal_status` (`tanggal`,`status`);
 
 --
 -- Indexes for table `keuangan`
 --
 ALTER TABLE `keuangan`
   ADD PRIMARY KEY (`id_kas`),
-  ADD KEY `fk_keuangan_user` (`id_user`);
+  ADD KEY `fk_keuangan_user` (`id_user`),
+  ADD KEY `idx_tipe_tanggal` (`tipe`,`tanggal`),
+  ADD KEY `idx_tanggal` (`tanggal`);
 
 --
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id_user`),
-  ADD UNIQUE KEY `username` (`username`);
+  ADD UNIQUE KEY `username` (`username`),
+  ADD KEY `idx_peran_aktif` (`peran`,`status_aktif`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -272,8 +354,7 @@ ALTER TABLE `absen_latihan`
 --
 -- Constraints for table `alat`
 --
-ALTER TABLE `alat`
-  ADD CONSTRAINT `fk_alat_user` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE SET NULL;
+-- Catatan: Relasi alat-pengguna sekarang ada di tabel `alat_pengguna`
 
 --
 -- Constraints for table `booking_acara`

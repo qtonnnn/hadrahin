@@ -24,6 +24,7 @@ $user = $stmt->fetch();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Anggota - Hadrah</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥁</text></svg>">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
@@ -69,7 +70,7 @@ $user = $stmt->fetch();
             <div class="action-card">
                 <h3>Jadwal Latihan</h3>
                 <p>Lihat jadwal latihan upcoming</p>
-                <a href="../modules/absen/jadwal.php">Lihat Jadwal</a>
+                <a href="../modules/jadwallatihan/index.php">Lihat Jadwal</a>
             </div>
 
             <div class="action-card">
