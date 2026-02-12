@@ -58,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $user_id = $_SESSION['user_id'];
             
-            $stmt = $pdo->prepare("INSERT INTO alat (nama_alat, jumlah_baik, jumlah_rusak, user_record) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nama_alat, $jumlah_baik, $jumlah_rusak, $user_id]);
+            $stmt = $pdo->prepare("INSERT INTO alat (nama_alat, jumlah_baik, jumlah_rusak, keterangan, user_record) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$nama_alat, $jumlah_baik, $jumlah_rusak, $keterangan, $user_id]);
             $id_alat = $pdo->lastInsertId();
             
             if (!empty($pengguna_terpilih)) {
@@ -398,6 +398,10 @@ include '../../includes/header.php';
                     <div class="row">
                         <div class="col-4 fw-bold">Jumlah Rusak:</div>
                         <div class="col-8" id="confirmRusak">-</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-4 fw-bold">Keterangan:</div>
+                        <div class="col-8" id="confirmKeterangan">-</div>
                     </div>
                 </div>
             </div>
@@ -741,11 +745,13 @@ function showConfirmModal() {
     const total = document.getElementById('total_alat').value || '1';
     const baik = document.getElementById('jumlah_baik').value || '0';
     const rusak = document.getElementById('jumlah_rusak').value || '0';
+    const keterangan = document.getElementById('keterangan').value || '-';
     
     document.getElementById('confirmNama').textContent = nama;
     document.getElementById('confirmTotal').textContent = total + ' unit';
     document.getElementById('confirmBaik').textContent = baik;
     document.getElementById('confirmRusak').textContent = rusak;
+    document.getElementById('confirmKeterangan').textContent = keterangan;
     
     new bootstrap.Modal(document.getElementById('confirmModal')).show();
 }

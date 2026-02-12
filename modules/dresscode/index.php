@@ -223,6 +223,10 @@ include '../../includes/header.php';
                                     <?= date('d/m/Y', strtotime($dc['created_at'])) ?>
                                 </td>
                                 <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-info" title="Detail"
+                                            onclick="showDetailModal(<?= $dc['id_dresscode'] ?>, '<?= htmlspecialchars($dc['nama_pakaian'], ENT_QUOTES) ?>', '<?= htmlspecialchars($dc['deskripsi'] ?? '', ENT_QUOTES) ?>', '<?= htmlspecialchars($dc['warna'] ?? '', ENT_QUOTES) ?>', '<?= $dc['status'] ?>')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                     <a href="edit.php?id=<?= $dc['id_dresscode'] ?>" class="btn btn-sm btn-outline-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -393,7 +397,208 @@ include '../../includes/header.php';
         flex: 1;
     }
 }
+
+/* Modal Detail Dresscode Styles */
+.dresscode-profile-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.dresscode-profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+.dresscode-info-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.dresscode-info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dresscode-info-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dresscode-info-content {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.dresscode-info-content small {
+    letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .dresscode-info-card {
+        padding: 12px;
+    }
+    
+    .dresscode-info-icon {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .dresscode-avatar-xl {
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 32px !important;
+    }
+    
+    .dresscode-profile-header {
+        padding: 2rem 1rem !important;
+    }
+}
 </style>
+
+<!-- Modal Detail Dresscode -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="detailModalLabel">
+                    <i class="fas fa-tshirt me-2"></i>Detail Dresscode
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Profile Header -->
+                <div class="dresscode-profile-header bg-success bg-gradient text-white p-4 text-center">
+                    <div class="dresscode-avatar-xl bg-white text-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow" id="detailAvatar" style="width: 100px; height: 100px; font-size: 40px;">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <h4 class="mb-1 fw-bold" id="detailNamaPakaian">-</h4>
+                    <span class="badge bg-white text-success fs-6" id="detailStatus">-</span>
+                </div>
+                
+                <!-- Dresscode Info Cards -->
+                <div class="p-4">
+                    <!-- Warna Section -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="dresscode-info-icon dresscode-info-icon bg-success bg-opacity-10 text-success rounded-3 p-3">
+                                <i class="fas fa-palette fa-lg"></i>
+                            </div>
+                            <h6 class="mb-0 text-success fw-bold">Warna</h6>
+                        </div>
+                        <div class="card border-0 bg-light rounded-4">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span id="detailWarnaBadge" class="badge" style="width: 60px; height: 30px;"></span>
+                                    <span class="fw-bold text-dark" id="detailWarnaText">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deskripsi Section -->
+                    <div class="mb-0">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="dresscode-info-icon dresscode-info-icon bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                                <i class="fas fa-align-left fa-lg"></i>
+                            </div>
+                            <h6 class="mb-0 text-primary fw-bold">Deskripsi</h6>
+                        </div>
+                        <div class="card border-0 bg-light rounded-4">
+                            <div class="card-body p-3">
+                                <p class="mb-0 text-dark" id="detailDeskripsi">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fungsi untuk menampilkan modal detail
+function showDetailModal(idDresscode, namaPakaian, deskripsi, warna, status) {
+    // Set data dasar
+    document.getElementById('detailNamaPakaian').textContent = namaPakaian || '-';
+    document.getElementById('detailDeskripsi').textContent = deskripsi || 'Tidak ada deskripsi';
+    document.getElementById('detailWarnaText').textContent = warna || '-';
+    
+    // Set warna badge
+    const warnaBadge = document.getElementById('detailWarnaBadge');
+    if (warna) {
+        // Convert hex to RGB untuk text color
+        const hex = ltrim(warna, '#');
+        let textColor = '#000000';
+        if (hex.length === 6) {
+            const r = hexdec(substr(hex, 0, 2));
+            const g = hexdec(substr(hex, 2, 2));
+            const b = hexdec(substr(hex, 4, 2));
+            const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            textColor = brightness > 128 ? '#000000' : '#ffffff';
+        }
+        warnaBadge.style.backgroundColor = warna;
+        warnaBadge.style.color = textColor;
+        warnaBadge.style.border = '1px solid ' + warna;
+        warnaBadge.textContent = warna;
+    } else {
+        warnaBadge.style.backgroundColor = '#e9ecef';
+        warnaBadge.style.color = '#6c757d';
+        warnaBadge.style.border = '1px solid #dee2e6';
+        warnaBadge.textContent = '-';
+    }
+    
+    // Set status badge
+    const statusEl = document.getElementById('detailStatus');
+    if (status === 'aktif') {
+        statusEl.className = 'badge bg-white text-success fs-6';
+        statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i>Aktif';
+    } else {
+        statusEl.className = 'badge bg-white text-secondary fs-6';
+        statusEl.innerHTML = '<i class="fas fa-times-circle me-1"></i>Nonaktif';
+    }
+    
+    // Tampilkan modal
+    new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+// Helper function untuk substr
+function substr(str, start, length) {
+    return str.substring(start, start + length);
+}
+
+// Helper function untuk hexdec
+function hexdec(hex) {
+    return parseInt(hex, 16);
+}
+
+// Helper function untuk ltrim
+function ltrim(str, char) {
+    return str.replace(new RegExp('^' + char + '+'), '');
+}
+</script>
 
 <?php include '../../includes/footer.php'; ?>
 

@@ -93,12 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user_id = $_SESSION['user_id'];
             
             $stmt = $pdo->prepare("
-                UPDATE alat 
-                SET nama_alat = ?, jumlah_baik = ?, jumlah_rusak = ?, 
+                UPDATE alat
+                SET nama_alat = ?, jumlah_baik = ?, jumlah_rusak = ?, keterangan = ?,
                     updated_at = NOW(), user_modified = ?
                 WHERE id_alat = ?
             ");
-            $stmt->execute([$nama_alat, $jumlah_baik, $jumlah_rusak, $user_id, $id_alat]);
+            $stmt->execute([$nama_alat, $jumlah_baik, $jumlah_rusak, $keterangan, $user_id, $id_alat]);
             
             $pengguna_terpilih = array_map('intval', $pengguna_terpilih);
             $existing_ids = array_map('intval', $pengguna_ids);
@@ -258,8 +258,8 @@ include '../../includes/header.php';
                             <label for="keterangan" class="form-label">Keterangan</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-sticky-note"></i></span>
-                                <textarea class="form-control" id="keterangan" name="keterangan" rows="1" 
-                                          placeholder="Catatan..."><?= htmlspecialchars($_POST['keterangan'] ?? '') ?></textarea>
+                                <textarea class="form-control" id="keterangan" name="keterangan" rows="1"
+                                          placeholder="Catatan..."><?= htmlspecialchars($_POST['keterangan'] ?? $alat['keterangan'] ?? '') ?></textarea>
                             </div>
                     </div>
                     
@@ -481,11 +481,18 @@ include '../../includes/header.php';
                     <div class="row">
                         <div class="col-4 fw-bold">Jumlah Rusak:</div>
                         <div class="col-8" id="confirmRusak">-</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-4 fw-bold">Keterangan:</div>
+                        <div class="col-8" id="confirmKeterangan">-</div>
+                    </div>
                 </div>
+            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-primary" onclick="submitForm()">Konfirmasi</button>
             </div>
+        </div>
     </div>
 
 <script>
@@ -821,11 +828,13 @@ function showConfirmModal() {
     const total = document.getElementById('total_alat').value || '1';
     const baik = document.getElementById('jumlah_baik').value || '0';
     const rusak = document.getElementById('jumlah_rusak').value || '0';
+    const keterangan = document.getElementById('keterangan').value || '-';
     
     document.getElementById('confirmNama').textContent = nama;
     document.getElementById('confirmTotal').textContent = total + ' unit';
     document.getElementById('confirmBaik').textContent = baik;
     document.getElementById('confirmRusak').textContent = rusak;
+    document.getElementById('confirmKeterangan').textContent = keterangan;
     
     new bootstrap.Modal(document.getElementById('confirmModal')).show();
 }
