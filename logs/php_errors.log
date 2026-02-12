@@ -20,3 +20,19 @@ Stack trace:
 [10-Feb-2026 17:47:35 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
 [10-Feb-2026 18:00:14 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
 [10-Feb-2026 18:00:14 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[12-Feb-2026 16:52:42 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[12-Feb-2026 16:52:42 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[2026-02-12 17:40:49] [ERROR] [E_WARNING] require_once(../config/database): Failed to open stream: No such file or directory in /opt/lampp/htdocs/hadrahin/api/change_password.php on line 26
+[2026-02-12 17:40:49] [Error] [UNHANDLED] Failed opening required '../config/database' (include_path='.:/opt/lampp/lib/php') | Trace: #0 {main}
+[2026-02-12 17:43:33] [ERROR] [E_WARNING] require_once(../config/database): Failed to open stream: No such file or directory in /opt/lampp/htdocs/hadrahin/api/change_password.php on line 26
+[2026-02-12 17:43:33] [Error] [UNHANDLED] Failed opening required '../config/database' (include_path='.:/opt/lampp/lib/php') | Trace: #0 {main}
+[2026-02-12 17:49:17] [ERROR] [E_WARNING] require_once(../config/database): Failed to open stream: No such file or directory in /opt/lampp/htdocs/hadrahin/api/change_password.php on line 26
+[2026-02-12 17:49:17] [Error] [UNHANDLED] Failed opening required '../config/database' (include_path='.:/opt/lampp/lib/php') | Trace: #0 {main}
+[12-Feb-2026 17:54:12 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[12-Feb-2026 17:54:12 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[2026-02-12 17:54:36] [ERROR] [E_WARNING] require_once(../config/database): Failed to open stream: No such file or directory in /opt/lampp/htdocs/hadrahin/api/change_password.php on line 26
+[2026-02-12 17:54:36] [Error] [UNHANDLED] Failed opening required '../config/database' (include_path='.:/opt/lampp/lib/php') | Trace: #0 {main}
+[2026-02-12 17:54:46] [ERROR] [E_WARNING] require_once(../config/database): Failed to open stream: No such file or directory in /opt/lampp/htdocs/hadrahin/api/change_password.php on line 26
+[2026-02-12 17:54:46] [Error] [UNHANDLED] Failed opening required '../config/database' (include_path='.:/opt/lampp/lib/php') | Trace: #0 {main}
+[12-Feb-2026 18:05:27 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
+[12-Feb-2026 18:05:27 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 1943
