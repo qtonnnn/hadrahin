@@ -134,8 +134,6 @@ function require_role($allowed_roles) {
         // Redirect ke dashboard masing-masing
         if ($_SESSION['peran'] === 'admin') {
             header('Location: ../dashboard/admin.php');
-        } elseif ($_SESSION['peran'] === 'pembina') {
-            header('Location: ../dashboard/pembina.php');
         } else {
             header('Location: ../dashboard/anggota.php');
         }

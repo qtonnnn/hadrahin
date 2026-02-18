@@ -13,8 +13,8 @@ if (!defined('BASE_URL')) {
 require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 
-// Check permission (Admin & Pembina only)
-if ($_SESSION['peran'] != 'admin' && $_SESSION['peran'] != 'pembina') {
+// Check permission (Admin only)
+if ($_SESSION['peran'] != 'admin') {
     header('Location: index.php?error=permission_denied');
     exit;
 }
@@ -50,9 +50,9 @@ try {
     $dresscodes = [];
 }
 
-// Get all admin and pembina users for penanggung jawab dropdown
+// Get all admin users for penanggung jawab dropdown
 try {
-    $stmt = $pdo->query("SELECT id_user, nama_lengkap, peran FROM user WHERE peran IN ('admin', 'pembina') AND status_aktif = 1 ORDER BY nama_lengkap");
+    $stmt = $pdo->query("SELECT id_user, nama_lengkap, peran FROM user WHERE peran = 'admin' AND status_aktif = 1 ORDER BY nama_lengkap");
     $penanggung_jawab = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $penanggung_jawab = [];
@@ -277,7 +277,7 @@ include '../../includes/header.php';
                             <?php if (empty($penanggung_jawab)): ?>
                                 <div class="form-text text-warning">
                                     <i class="fas fa-exclamation-triangle me-1"></i>
-                                    Tidak ada admin/pembina aktif.
+                                    Tidak ada admin aktif.
                                 </div>
                             <?php endif; ?>
                         </div>

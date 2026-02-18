@@ -78,7 +78,7 @@ include '../../includes/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <span class="badge <?= $user['peran'] === 'admin' ? 'bg-danger' : ($user['peran'] === 'pembina' ? 'bg-warning text-dark' : 'bg-primary') ?>">
+                            <span class="badge <?= $user['peran'] === 'admin' ? 'bg-danger' : 'bg-primary' ?>">
                                 <?= htmlspecialchars(ucfirst($user['peran'])) ?>
                             </span>
                             <span class="badge <?= $user['status_aktif'] ? 'bg-success' : 'bg-secondary' ?>">

@@ -19,8 +19,8 @@ $page_title = "Export Absensi Latihan";
 $user_peran = $_SESSION['peran'] ?? 'anggota';
 $user_id = $_SESSION['user_id'] ?? 0;
 
-// Check permission - only admin and pembina can access
-if (!in_array($user_peran, ['admin', 'pembina'])) {
+// Check permission - only admin can access
+if ($user_peran !== 'admin') {
     header('Location: ../dashboard/' . $user_peran . '.php?msg=access_denied');
     exit;
 }

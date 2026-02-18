@@ -157,7 +157,7 @@ include '../../includes/header.php';
 
 
 <!-- Floating Action Button -->
-<?php if ($_SESSION['peran'] == 'admin' || $_SESSION['peran'] == 'pembina'): ?>
+<?php if ($_SESSION['peran'] == 'admin'): ?>
     <a href="tambah.php" class="floating-btn" title="Tambah Booking">
         <i class="fas fa-plus"></i>
     </a>
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <?php if ($_SESSION['peran'] == 'admin' || $_SESSION['peran'] == 'pembina'): ?>
+                                    <?php if ($_SESSION['peran'] == 'admin'): ?>
                                         <a href="edit.php?id=<?= $booking['id_booking'] ?>" class="btn btn-sm btn-outline-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <button class="btn btn-sm btn-outline-info" onclick="viewBooking(<?= $booking['id_booking'] ?>, '<?= $booking['tanggal_acara'] ?>')">
                                 <i class="fas fa-eye me-1"></i>Detail
                             </button>
-                            <?php if ($_SESSION['peran'] == 'admin' || $_SESSION['peran'] == 'pembina'): ?>
+                            <?php if ($_SESSION['peran'] == 'admin'): ?>
                                 <a href="edit.php?id=<?= $booking['id_booking'] ?>" class="btn btn-sm btn-outline-warning">
                                     <i class="fas fa-edit me-1"></i>Edit
                                 </a>

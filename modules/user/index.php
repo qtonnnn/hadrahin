@@ -173,7 +173,6 @@ include '../../includes/header.php';
                                     <?php
                                     $peran_class = match($user['peran']) {
                                         'admin' => 'bg-danger',
-                                        'pembina' => 'bg-warning text-dark',
                                         default => 'bg-primary'
                                     };
                                     ?>
@@ -225,7 +224,6 @@ include '../../includes/header.php';
                                 <?php
                                 $peran_class = match($user['peran']) {
                                     'admin' => 'bg-danger',
-                                    'pembina' => 'bg-warning text-dark',
                                     default => 'bg-primary'
                                 };
                                 ?>

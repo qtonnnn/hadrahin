@@ -695,7 +695,7 @@ function showDetailModal(idAlat, namaAlat, jumlahBaik, jumlahRusak, keterangan) 
 
         penggunaList.forEach(user => {
             const statusBadge = user.status === 'aktif' ? 'bg-info' : 'bg-secondary';
-            const statusText = user.status === 'aktif' ? 'Aktif' : 'Dikembalikan';
+            const statusText = user.status === 'aktif' ? 'Aktif' : 'Non-aktif';
             const tanggal = new Date(user.tanggal_diberikan).toLocaleDateString('id-ID');
 
             html += `
@@ -741,12 +741,12 @@ function showUserDetailModalById(userId, alatId) {
     if (user.status === 'aktif') {
         statusEl.innerHTML = '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Aktif</span>';
     } else {
-        statusEl.innerHTML = '<span class="badge bg-secondary"><i class="fas fa-times-circle me-1"></i>Dikembalikan</span>';
+        statusEl.innerHTML = '<span class="badge bg-secondary"><i class="fas fa-times-circle me-1"></i>Dinonaktifkan</span>';
     }
 
     // Set peran badge
     const peranBadge = document.getElementById('userDetailPeran');
-    const peranClass = user.peran === 'admin' ? 'bg-danger' : (user.peran === 'pembina' ? 'bg-warning text-dark' : 'bg-primary');
+    const peranClass = user.peran === 'admin' ? 'bg-danger' : 'bg-primary';
     peranBadge.className = `badge ${peranClass}`;
     peranBadge.textContent = (user.peran || 'anggota').charAt(0).toUpperCase() + (user.peran || 'anggota').slice(1);
 

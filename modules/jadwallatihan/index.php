@@ -163,8 +163,8 @@ if (isset($_GET['hapus'])) {
 include '../../includes/header.php';
 ?>
 
-<!-- Floating Action Button - Only for Admin & Pembina -->
-<?php if (in_array($user_peran, ['admin', 'pembina'])): ?>
+<!-- Floating Action Button - Only for Admin -->
+<?php if ($user_peran === 'admin'): ?>
     <a href="tambah.php" class="floating-btn" title="Tambah Jadwal">
         <i class="fas fa-plus"></i>
     </a>
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <?php if (in_array($user_peran, ['admin', 'pembina'])): ?>
+                                    <?php if ($user_peran === 'admin'): ?>
                                         <a href="edit.php?id=<?= $jadwal['id_jadwal'] ?>" class="btn btn-sm btn-outline-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <?php endif; ?>
                         </div>
                         <div class="jadwal-card-footer">
-                            <?php if (in_array($user_peran, ['admin', 'pembina'])): ?>
+                            <?php if ($user_peran === 'admin'): ?>
                                 <a href="edit.php?id=<?= $jadwal['id_jadwal'] ?>" class="btn btn-outline-warning btn-sm">
                                     <i class="fas fa-edit me-1"></i>Edit
                                 </a>

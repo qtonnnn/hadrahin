@@ -22,7 +22,7 @@ if ($id <= 0) {
 }
 
 // Check permission
-if ($user_peran !== 'admin' && $user_peran !== 'pembina') {
+if ($user_peran !== 'admin') {
     header('Location: index.php?msg=access_denied');
     exit;
 }

@@ -286,7 +286,7 @@ Sistem notifikasi popup untuk feedback pengguna:
 **Catatan**: 
 - Anggota hanya bisa melihat jadwal (tidak bisa tambah/edit/hapus)
 - Hanya Admin yang bisa menghapus jadwal
-- Pembina dan Admin bisa mengubah status jadwal
+- Admin bisa mengubah status jadwal
 - Absensi hanya bisa diambil untuk jadwal dengan status "Direncanakan"
 
 ## 📱 Responsive Design
@@ -295,7 +295,7 @@ Sistem notifikasi popup untuk feedback pengguna:
 |----------|----------|
 | **Desktop** | Tabel dengan kolom No, Tanggal, Jam, Lokasi, Catatan, Status, Aksi |
 | **Mobile** | Card view dengan layout vertikal |
-| **FAB** | Floating Action Button untuk tambah data (admin/pembina only) |
+| **FAB** | Floating Action Button untuk tambah data (admin only) |
 | **Modal** | Bootstrap 5 modal yang responsive |
 | **Toast** | Fixed position dengan z-index tinggi |
 

@@ -5,7 +5,7 @@ Dokumentasi lengkap untuk modul pengelolaan user/anggota pada aplikasi Hadrah.
 ## 📋 Fitur
 
 - **CRUD User**: Tambah, lihat, edit, dan hapus user
-- **Multi-Role Management**: Mendukung 3 peran (Admin, Pembina, Anggota)
+- **Multi-Role Management**: Mendukung 2 peran (Admin, Anggota)
 - **Status Management**: Aktif/Non-aktif user
 - **Pagination**: Navigasi halaman untuk data banyak
 - **Search & Filter**: Pencarian berdasarkan username atau nama lengkap
@@ -42,8 +42,8 @@ modules/user/
 | `username` | VARCHAR(50) | Username unik untuk login |
 | `password` | VARCHAR(255) | Password di-hash dengan bcrypt |
 | `nama_lengkap` | VARCHAR(100) | Nama lengkap user |
-| `no_hp` | VARCHAR(20) | Nomor HP (wajib untuk pembina/anggota) |
-| `peran` | ENUM | `admin`, `pembina`, atau `anggota` |
+| `no_hp` | VARCHAR(20) | Nomor HP (wajib untuk anggota) |
+| `peran` | ENUM | `admin` atau `anggota` |
 | `status_aktif` | TINYINT | 1 = Aktif, 0 = Tidak Aktif |
 | `created_at` | TIMESTAMP | Waktu dibuat |
 | `updated_at` | TIMESTAMP | Waktu diubah |

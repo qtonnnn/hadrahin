@@ -325,7 +325,6 @@ function require_permission(string $requiredRole): void {
     
     $permissions = [
         'anggota' => 1,
-        'pembina' => 2,
         'admin' => 3
     ];
     

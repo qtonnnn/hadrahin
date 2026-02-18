@@ -41,8 +41,6 @@ if (isset($_SESSION['user_id'])) {
     $peran = $_SESSION['peran'];
     if ($peran === 'admin') {
         header('Location: ' . BASE_URL . '/dashboard/admin.php');
-    } elseif ($peran === 'pembina') {
-        header('Location: ' . BASE_URL . '/dashboard/pembina.php');
     } else {
         header('Location: ' . BASE_URL . '/dashboard/anggota.php');
     }
@@ -113,8 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $peran = $user['peran'];
                 if ($peran === 'admin') {
                     header('Location: ' . BASE_URL . '/dashboard/admin.php');
-                } elseif ($peran === 'pembina') {
-                    header('Location: ' . BASE_URL . '/dashboard/pembina.php');
                 } else {
                     header('Location: ' . BASE_URL . '/dashboard/anggota.php');
                 }

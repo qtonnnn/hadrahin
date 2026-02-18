@@ -13,8 +13,8 @@ if (!defined('BASE_URL')) {
 require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 
-// Check permission (Admin & Pembina only)
-if ($_SESSION['peran'] != 'admin' && $_SESSION['peran'] != 'pembina') {
+// Check permission (Admin only)
+if ($_SESSION['peran'] != 'admin') {
     header('Location: index.php?error=permission_denied');
     exit;
 }

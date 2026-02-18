@@ -523,7 +523,7 @@
           Harmoni <span class="hero-highlight">Tim Hadrah</span><br> dalam Satu Genggaman
         </h1>
         <p class="hero-desc">
-          HADRAHIN — platform manajemen tim hadrah yang sudah mencakup modul Jadwal Latihan, Absensi, Inventaris Alat, Acara, Dresscode, Keuangan, dan Manajemen User. Mudah digunakan oleh pengurus dan pembina.
+          HADRAHIN — platform manajemen tim hadrah yang sudah mencakup modul Jadwal Latihan, Absensi, Inventaris Alat, Acara, Dresscode, Keuangan, dan Manajemen User. Mudah digunakan oleh pengurus.
         </p>
         <div class="hero-buttons">
           <a href="auth/login.php" class="btn btn-primary"><i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i> Masuk</a>

@@ -14,7 +14,7 @@ $user_peran = $_SESSION['peran'] ?? 'guest';
 $user_id = $_SESSION['user_id'] ?? 0;
 
 // Check permission
-if ($user_peran !== 'admin' && $user_peran !== 'pembina') {
+if ($user_peran !== 'admin') {
     header('Location: index.php?msg=access_denied');
     exit;
 }

@@ -4,7 +4,7 @@ Dokumentasi lengkap untuk modul booking acara dalam sistem Hadrahin.
 
 ## 1. Gambaran Umum
 
-Modul **Booking Acara** berfungsi untuk mengelola pemesanan/manggung acara grup hadrah. Modul ini memungkinkan admin dan pembina untuk mencatat, mengelola, dan mendokumentasikan setiap acara yang dihadiri oleh grup.
+Modul **Booking Acara** berfungsi untuk mengelola pemesanan/manggung acara grup hadrah. Modul ini memungkinkan admin untuk mencatat, mengelola, dan mendokumentasikan setiap acara yang dihadiri oleh grup.
 
 ### Fitur Utama
 
@@ -424,7 +424,7 @@ Response: HTML table dengan detail booking
 
 ### 7.1 Menambah Booking Baru
 
-1. Login sebagai Admin atau Pembina
+1. Login sebagai Admin
 2. Navigasi ke menu "Booking Acara"
 3. Klik tombol FAB (+) di pojok kanan bawah
 4. Isi form dengan data acara

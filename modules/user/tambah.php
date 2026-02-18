@@ -43,9 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Nama lengkap wajib diisi!";
     }
 
-    // Phone number is required for pembina and anggota, optional for admin
-    if (in_array($peran, ['pembina', 'anggota']) && empty($no_hp)) {
-        $errors[] = "Nomor HP wajib diisi untuk Peran Pembina/Anggota!";
+    // Phone number is required for anggota, optional for admin
+    if ($peran === 'anggota' && empty($no_hp)) {
+        $errors[] = "Nomor HP wajib diisi untuk Peran Anggota!";
     } elseif (!empty($no_hp) && !preg_match('/^[0-9]{10,15}$/', $no_hp)) {
         $errors[] = "Nomor HP harus berupa angka (10-15 digit)!";
     }
@@ -140,7 +140,7 @@ include '../../includes/header.php';
                                    value="<?= htmlspecialchars($_POST['no_hp'] ?? '') ?>" 
                                    placeholder="Masukkan nomor HP (contoh: 081234567890)" maxlength="15">
                         </div>
-                        <div class="form-text" id="no_hp_help">Format: 10-15 digit angka (contoh: 081234567890). Wajib untuk Peran Pembina/Anggota.</div>
+                        <div class="form-text" id="no_hp_help">Format: 10-15 digit angka (contoh: 081234567890). Wajib untuk Peran Anggota.</div>
                     </div>
 
                     <div class="row">
@@ -175,7 +175,6 @@ include '../../includes/header.php';
                             <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                             <select class="form-select" id="peran" name="peran">
                                 <option value="anggota" <?= ($_POST['peran'] ?? '') === 'anggota' ? 'selected' : '' ?>>Anggota</option>
-                                <option value="pembina" <?= ($_POST['peran'] ?? '') === 'pembina' ? 'selected' : '' ?>>Pembina</option>
                                 <option value="admin" <?= ($_POST['peran'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
                             </select>
                         </div>
@@ -357,10 +356,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateNoHp() {
         const noHp = noHpInput.value;
         const peran = document.getElementById('peran').value;
-        const isRequired = ['pembina', 'anggota'].includes(peran);
+        const isRequired = peran === 'anggota';
         
         if (!isRequired && noHp.length === 0) return clearError(noHpInput);
-        if (isRequired && noHp.length === 0) return showError(noHpInput, 'Nomor HP wajib diisi untuk Peran Pembina/Anggota!');
+        if (isRequired && noHp.length === 0) return showError(noHpInput, 'Nomor HP wajib diisi untuk Peran Anggota!');
         if (!/^[0-9]*$/.test(noHp)) return showError(noHpInput, 'Nomor HP hanya boleh berisi angka!');
         if (noHp.length > 0 && noHp.length < 10) return showError(noHpInput, 'Nomor HP minimal 10 digit!');
         if (noHp.length > 15) {
@@ -375,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
     noHpInput.addEventListener('blur', function() {
         const noHp = this.value;
         const peran = document.getElementById('peran').value;
-        const isRequired = ['pembina', 'anggota'].includes(peran);
+        const isRequired = peran === 'anggota';
         
         if ((isRequired && noHp.length >= 10) || (!isRequired && noHp.length >= 10)) {
             fetch('../../api/check_no_hp.php?no_hp=' + encodeURIComponent(noHp))
@@ -389,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('peran').addEventListener('change', function() {
-        const isRequired = ['pembina', 'anggota'].includes(this.value);
+        const isRequired = this.value === 'anggota';
         document.getElementById('no_hp_required').style.display = isRequired ? 'inline' : 'none';
         if (isRequired) validateNoHp();
         else clearError(noHpInput);
@@ -397,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize required indicator
     const peran = document.getElementById('peran').value;
-    const isRequired = ['pembina', 'anggota'].includes(peran);
+    const isRequired = peran === 'anggota';
     document.getElementById('no_hp_required').style.display = isRequired ? 'inline' : 'none';
 
     passwordInput.addEventListener('input', function() {

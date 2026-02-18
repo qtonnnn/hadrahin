@@ -183,7 +183,7 @@ setAllStatus('alpa')   // Semua terlihat jadi Alpa
 | Anggota | ✗ | ✗ | ✗ | ✗ |
 
 **Catatan**:
-- Hanya Admin dan Pembina yang dapat mengakses modul ini
+- Hanya Admin yang dapat mengakses modul ini
 - Anggota tidak memiliki akses ke modul absensi
 - Hanya Admin yang dapat menghapus data absensi
 

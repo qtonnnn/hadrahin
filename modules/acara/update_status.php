@@ -10,8 +10,8 @@ require_once '../../config/database.php';
 // Set header untuk JSON
 header('Content-Type: application/json');
 
-// Check permission (Admin & Pembina only)
-if ($_SESSION['peran'] != 'admin' && $_SESSION['peran'] != 'pembina') {
+// Check permission (Admin only)
+if ($_SESSION['peran'] != 'admin') {
     echo json_encode(['success' => false, 'message' => 'Akses ditolak']);
     exit;
 }
