@@ -83,7 +83,7 @@
                             <li class="nav-item">
                                 <a href="<?= BASE_URL ?>/modules/user/edit.php?id=<?= $user_id ?>" class="nav-link <?= $is_profil_page ? 'active' : '' ?>">
                                     <i class="fas fa-user-cog"></i>
-                                    <span>Profil Saya</span>
+                                    <span>Profil Admin</span>
                                 </a>
                             </li>
                             <li class="nav-item">

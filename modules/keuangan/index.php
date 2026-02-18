@@ -214,7 +214,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <h6 class="m-0 font-weight-bold text-primary">
                 <i class="fas fa-list me-1"></i> Riwayat Transaksi Kas
             </h6>
-            <span class="badge bg-secondary"><?= $total_transaksi ?> transaksi</span>
+            <div class="d-flex gap-2">
+                <a href="export.php<?= '?' . http_build_query(array_filter(['search' => $search, 'tipe' => $tipe_filter, 'bulan' => $bulan_filter])) ?>" 
+                   class="btn btn-success btn-sm" 
+                   title="Export ke Excel">
+                    <i class="fas fa-file-excel me-1"></i>Export
+                </a>
+                <span class="badge bg-secondary"><?= $total_transaksi ?> transaksi</span>
+            </div>
         </div>
     </div>
     <div class="card-body p-0">

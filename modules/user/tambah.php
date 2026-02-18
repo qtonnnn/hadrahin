@@ -173,11 +173,11 @@ include '../../includes/header.php';
                         <label for="peran" class="form-label">Peran</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
-                            <select class="form-select" id="peran" name="peran">
-                                <option value="anggota" <?= ($_POST['peran'] ?? '') === 'anggota' ? 'selected' : '' ?>>Anggota</option>
-                                <option value="admin" <?= ($_POST['peran'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
+                            <select class="form-select" id="peran" name="peran" disabled>
+                                <option value="anggota" selected>Anggota</option>
                             </select>
                         </div>
+                        <div class="form-text text-warning"><i class="fas fa-lock me-1"></i>Peran anggota tidak dapat diubah.</div>
                     </div>
 
                     <div class="mb-4">

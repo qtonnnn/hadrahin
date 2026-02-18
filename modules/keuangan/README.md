@@ -414,9 +414,7 @@ function getSaldoKas() {
 - [x] Honor Acara Integration
 - [x] Responsive Design (Table + Card)
 - [x] Audit Trail
-- [ ] Export laporan ke PDF/Excel
 - [ ] Upload bukti transaksi (foto nota)
-- [ ] Grafik visualisasi keuangan
 - [ ] Laporan per periode (bulanan/tahunan)
 - [ ] Notifikasi saldo minimum
 - [ ] Multi-kas (kas utama, kas operasional, dll)

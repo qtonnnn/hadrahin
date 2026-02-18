@@ -491,7 +491,7 @@ Modul jadwal latihan menampilkan statistik dengan visual cards:
 - [ ] Bulk Operations
 - [ ] Riwayat Perubahan Jadwal
 - [ ] Multi-day Schedule Support
-- [ ] Lokasi Favorit (autocomplete)
+- [ ] Lokasi Favorit 
 
 ## 🐛 Riwayat Perbaikan
 

@@ -434,12 +434,9 @@ Modul user tidak menampilkan statistik khusus, namun informasi user terintegrasi
 - [x] Self-Delete Protection
 - [ ] Import user dari CSV/Excel
 - [ ] Export user ke PDF/Excel
-- [ ] Reset password oleh admin
 - [ ] Aktivasi user via email
 - [ ] Two-Factor Authentication (2FA)
 - [ ] Login history/audit log
-- [ ] User profile page
-- [ ] Change password sendiri
 - [ ] Gravatar integration untuk avatar
 
 ## 🐛 Riwayat Perbaikan

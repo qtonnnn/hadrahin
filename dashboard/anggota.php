@@ -55,19 +55,19 @@ $stmt = $pdo->prepare("SELECT id_jadwal, tanggal, jam_mulai, lokasi FROM jadwal_
 $stmt->execute([$today]);
 $jadwal_hari_ini = $stmt->fetchAll();
 
-// 3. Booking Acara Mendatang (status menunggu saja untuk display utama)
+// 3. Booking Acara Mendatang (hanya status diterima dan selesai yang ditampilkan untuk anggota)
 $stmt = $pdo->query("SELECT ba.*, d.nama_pakaian as dresscode_name, d.warna as dresscode_warna, d.deskripsi as dresscode_deskripsi
 FROM booking_acara ba
 LEFT JOIN dresscode d ON ba.id_dresscode = d.id_dresscode
-WHERE ba.status = 'menunggu' AND ba.tanggal_acara >= CURDATE()
+WHERE ba.status IN ('diterima', 'selesai') AND ba.tanggal_acara >= CURDATE()
 ORDER BY ba.tanggal_acara ASC LIMIT 5");
 $acara_mendatang = $stmt->fetchAll();
 
-// Query untuk semua acara (untuk modal dengan pagination - semua status)
+// Query untuk semua acara (untuk modal dengan pagination - hanya diterima dan selesai)
 $stmt = $pdo->query("SELECT ba.id_booking, ba.nama_acara, ba.tanggal_acara, ba.lokasi, ba.status, d.nama_pakaian as dresscode_name, d.deskripsi as dresscode_deskripsi
 FROM booking_acara ba
 LEFT JOIN dresscode d ON ba.id_dresscode = d.id_dresscode
-WHERE ba.tanggal_acara >= CURDATE()
+WHERE ba.status IN ('diterima', 'selesai') AND ba.tanggal_acara >= CURDATE()
 ORDER BY ba.tanggal_acara ASC");
 $semua_acara = $stmt->fetchAll();
 $acara_per_page = 3; // Dikurangi untuk performa lebih baik

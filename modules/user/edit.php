@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirm_password = $_POST['confirm_password'] ?? '';
     $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
     $no_hp = trim($_POST['no_hp'] ?? '');
-    $peran = $_POST['peran'] ?? 'anggota';
+    // Gunakan peran dari database (karena select disabled, tidak bisa diubah)
+    $peran = $user['peran'];
     // Use hidden input value when checkbox is disabled, otherwise use checkbox value
     $status_aktif = isset($_POST['status_aktif']) ? (int)$_POST['status_aktif'] : 
                    (isset($_POST['status_aktif_checkbox']) ? 1 : 0);
@@ -189,14 +190,21 @@ include '../../includes/header.php';
                         <label for="peran" class="form-label">Peran <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
-                            <select class="form-select" id="peran" name="peran" required>
+                            <select class="form-select" id="peran" name="peran" required disabled>
                                 <option value="anggota" <?= $user['peran'] === 'anggota' ? 'selected' : '' ?>>Anggota</option>
                                 <option value="admin" <?= $user['peran'] === 'admin' ? 'selected' : '' ?>>Admin</option>
                             </select>
                         </div>
+                        <div class="form-text text-warning"><i class="fas fa-lock me-1"></i>Peran tidak dapat diubah.</div>
                     </div>
 
                     <div class="mb-4">
+                        <?php if ($user['peran'] === 'admin'): ?>
+                            <div class="alert alert-info">
+                                <i class="fas fa-user-shield me-2"></i>
+                                <strong>Akun Admin</strong> - Status aktif tidak dapat diubah.
+                            </div>
+                        <?php else: ?>
                         <div class="form-check form-switch">
                             <input type="hidden" name="status_aktif" value="<?= $user['status_aktif'] ?>">
                             <input class="form-check-input" type="checkbox" id="status_aktif" name="status_aktif_checkbox" 
@@ -210,6 +218,7 @@ include '../../includes/header.php';
                                 <i class="fas fa-exclamation-triangle me-1"></i>
                                 Tidak dapat menonaktifkan akun karena ini adalah satu-satunya admin aktif di sistem.
                             </div>
+                        <?php endif; ?>
                         <?php endif; ?>
                     </div>
 
