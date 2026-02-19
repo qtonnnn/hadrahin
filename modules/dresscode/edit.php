@@ -1,6 +1,7 @@
 <?php
 /**
  * Edit Dresscode - Form dengan sidebar layout
+ * Fitur: Upload foto pakaian
  */
 
 require_once '../../includes/auth_check.php';
@@ -28,6 +29,7 @@ if (!$dresscode) {
 
 // Store original values
 $original_nama = $dresscode['nama_pakaian'];
+$original_foto = $dresscode['foto'];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -35,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $deskripsi = trim($_POST['deskripsi'] ?? '');
     $warna = trim($_POST['warna'] ?? '');
     $status = $_POST['status'] ?? 'aktif';
+    $hapus_foto = isset($_POST['hapus_foto']);
+    $foto_filename = $original_foto;
 
     $errors = [];
 
@@ -49,6 +53,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Status tidak valid!";
     }
 
+    // Handle file upload
+    if (!empty($_FILES['foto']['name'])) {
+        $file = $_FILES['foto'];
+        
+        // Debug: Check if file was uploaded
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $upload_errors = [
+                UPLOAD_ERR_INI_SIZE => 'File terlalu besar. Maksimal 2MB (cek pengaturan PHP).',
+                UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
+                UPLOAD_ERR_PARTIAL => 'File hanya terupload sebagian',
+                UPLOAD_ERR_NO_FILE => 'Tidak ada file dipilih',
+                UPLOAD_ERR_NO_TMP_DIR => 'Folder temp tidak ditemukan',
+                UPLOAD_ERR_CANT_WRITE => 'Gagal menulis ke disk',
+                UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
+            ];
+            $errors[] = "Error upload: " . ($upload_errors[$file['error']] ?? 'Unknown error: ' . $file['error']);
+        } else {
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            $max_size = 2 * 1024 * 1024; // 2MB
+
+            if (!in_array($file['type'], $allowed_types)) {
+                $errors[] = "Tipe file tidak diizinkan. Gunakan gambar (JPG, PNG, GIF, WEBP).";
+            } elseif ($file['size'] > $max_size) {
+                $errors[] = "File terlalu besar. Maksimal 2MB.";
+            } else {
+                // Create upload directory if not exists
+                $upload_dir = '../../assets/uploads/pakaian/';
+                if (!is_dir($upload_dir)) {
+                    if (!mkdir($upload_dir, 0777, true)) {
+                        $errors[] = "Gagal membuat direktori upload!";
+                    }
+                }
+
+                // Delete old photo if exists
+                if ($original_foto) {
+                    $old_file = $upload_dir . $original_foto;
+                    if (file_exists($old_file)) {
+                        unlink($old_file);
+                    }
+                }
+
+                if (empty($errors)) {
+                    // Generate unique filename
+                    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                    $foto_filename = 'pakaian_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext);
+                    $target_path = $upload_dir . $foto_filename;
+
+                    // Try move_uploaded_file first, if fails try copy
+                    if (!move_uploaded_file($file['tmp_name'], $target_path)) {
+                        // Fallback to copy if move_uploaded_file fails
+                        if (!copy($file['tmp_name'], $target_path)) {
+                            $errors[] = "Gagal mengupload foto! Periksa permission folder.";
+                            $foto_filename = $original_foto;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Handle delete photo checkbox
+    if ($hapus_foto && $original_foto) {
+        $upload_dir = '../../assets/uploads/pakaian/';
+        $old_file = $upload_dir . $original_foto;
+        if (file_exists($old_file)) {
+            unlink($old_file);
+        }
+        $foto_filename = null;
+    }
+
     // Check unique nama_pakaian (exclude current dresscode)
     if (empty($errors) && $nama_pakaian !== $original_nama) {
         $stmt = $pdo->prepare("SELECT id_dresscode FROM dresscode WHERE nama_pakaian = ? AND id_dresscode != ?");
@@ -60,8 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Update dresscode
     if (empty($errors)) {
-        $stmt = $pdo->prepare("UPDATE dresscode SET nama_pakaian = ?, deskripsi = ?, warna = ?, status = ?, user_modified = ?, updated_at = NOW() WHERE id_dresscode = ?");
-        $stmt->execute([$nama_pakaian, $deskripsi ?: null, $warna ?: null, $status, $_SESSION['user_id'], $id]);
+        $stmt = $pdo->prepare("UPDATE dresscode SET nama_pakaian = ?, deskripsi = ?, warna = ?, foto = ?, status = ?, user_modified = ?, updated_at = NOW() WHERE id_dresscode = ?");
+        $stmt->execute([$nama_pakaian, $deskripsi ?: null, $warna ?: null, $foto_filename, $status, $_SESSION['user_id'], $id]);
         
         header('Location: index.php?msg=edit_sukes');
         exit;
@@ -97,7 +171,7 @@ include '../../includes/header.php';
                 </div>
             </div>
             <div class="card-body">
-                <form method="POST" id="dresscodeForm">
+                <form method="POST" id="dresscodeForm" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="<?= $id ?>">
 
                     <div class="mb-3">
@@ -127,6 +201,42 @@ include '../../includes/header.php';
                             <input type="text" class="form-control" id="warna" name="warna" 
                                    placeholder="Contoh: Putih, Biru, Hitam" maxlength="50"
                                    value="<?= htmlspecialchars($dresscode['warna'] ?? '') ?>">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="foto" class="form-label">Foto Pakaian</label>
+                        <?php
+                        $foto_path = '../../assets/uploads/pakaian/' . ($dresscode['foto'] ?? '');
+                        $has_foto = !empty($dresscode['foto']) && file_exists($foto_path);
+                        ?>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-camera"></i></span>
+                            <input type="file" class="form-control" id="foto" name="foto" accept="image/jpeg,image/png,image/gif,image/webp">
+                        </div>
+                        <div class="form-text">Format: JPG, PNG, GIF, WEBP. Maksimal 2MB.</div>
+                        
+                        <!-- Existing Photo Preview -->
+                        <?php if ($has_foto): ?>
+                        <div id="existingFotoPreview" class="mt-2 text-center">
+                            <img src="../../assets/uploads/pakaian/<?= htmlspecialchars($dresscode['foto']) ?>" 
+                                 alt="Foto <?= htmlspecialchars($dresscode['nama_pakaian']) ?>" 
+                                 class="img-thumbnail" style="max-height: 200px;">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="hapus_foto" name="hapus_foto" value="1">
+                                <label class="form-check-label text-danger" for="hapus_foto">
+                                    Hapus foto
+                                </label>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- New Photo Preview -->
+                        <div id="newFotoPreview" class="mt-2 text-center" style="display: none;">
+                            <img id="newPreviewImg" src="" alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeNewPhoto()">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
                         </div>
                     </div>
 
@@ -197,6 +307,42 @@ include '../../includes/header.php';
 
 <script>
 const dresscodeId = <?= $id ?>;
+
+// Photo preview functionality
+document.getElementById('foto').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const existingPreview = document.getElementById('existingFotoPreview');
+    const newPreview = document.getElementById('newFotoPreview');
+    const newPreviewImg = document.getElementById('newPreviewImg');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            newPreviewImg.src = e.target.result;
+            newPreview.style.display = 'block';
+            if (existingPreview) {
+                existingPreview.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        newPreview.style.display = 'none';
+        if (existingPreview) {
+            existingPreview.style.display = 'block';
+        }
+    }
+});
+
+function removeNewPhoto() {
+    document.getElementById('foto').value = '';
+    document.getElementById('newFotoPreview').style.display = 'none';
+    document.getElementById('newPreviewImg').src = '';
+    
+    const existingPreview = document.getElementById('existingFotoPreview');
+    if (existingPreview) {
+        existingPreview.style.display = 'block';
+    }
+}
 
 // Show confirmation modal
 function showConfirmModal() {

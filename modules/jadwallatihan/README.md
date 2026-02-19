@@ -485,13 +485,11 @@ Modul jadwal latihan menampilkan statistik dengan visual cards:
 - [x] Confirmation Modal
 - [x] Auto-Submit Form
 - [ ] Calendar View
-- [ ] Recurring Schedules (jadwal berulang)
 - [ ] Export ke PDF/Excel
 - [ ] Email/SMS Reminder
 - [ ] Bulk Operations
 - [ ] Riwayat Perubahan Jadwal
 - [ ] Multi-day Schedule Support
-- [ ] Lokasi Favorit 
 
 ## 🐛 Riwayat Perbaikan
 

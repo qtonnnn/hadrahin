@@ -52,6 +52,15 @@ try {
 // Handle delete confirmation - Hard delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     try {
+        // Delete photo file if exists
+        if (!empty($dresscode['foto'])) {
+            $upload_dir = '../../assets/uploads/pakaian/';
+            $foto_path = $upload_dir . $dresscode['foto'];
+            if (file_exists($foto_path)) {
+                unlink($foto_path);
+            }
+        }
+        
         $stmt = $pdo->prepare("DELETE FROM dresscode WHERE id_dresscode = ?");
         $stmt->execute([$id]);
         

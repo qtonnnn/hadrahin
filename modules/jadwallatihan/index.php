@@ -179,6 +179,10 @@ include '../../includes/header.php';
     if ($_GET['msg'] === 'tambah_sukes') {
         $toastClass = 'bg-success';
         $toastMessage = 'Jadwal latihan berhasil ditambahkan!';
+    } elseif ($_GET['msg'] === 'tambah_banyak_sukes') {
+        $toastClass = 'bg-success';
+        $count = isset($_GET['count']) ? (int)$_GET['count'] : 0;
+        $toastMessage = "{$count} jadwal berulang berhasil dibuat!";
     } elseif ($_GET['msg'] === 'edit_sukes') {
         $toastClass = 'bg-success';
         $toastMessage = 'Data jadwal latihan berhasil diperbarui!';
@@ -313,9 +317,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 'dibatalkan' => 'bg-danger',
                                 default => 'bg-warning text-dark'
                             };
+                            
+                            // Check if this is a recurring schedule
+                            $is_recurring = !empty($jadwal['catatan']) && strpos($jadwal['catatan'], '[Recurring:') !== false;
                             ?>
                             <tr>
-                                <td class="text-center text-muted"><?= $offset + $i + 1 ?></td>
+                                <td class="text-center text-muted">
+                                    <?= $offset + $i + 1 ?>
+                                    <?php if ($is_recurring): ?>
+                                        <i class="fas fa-redo text-info d-block" style="font-size: 10px;" title="Jadwal Berulang"></i>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 12px;">
@@ -407,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <?= $search || $status_filter ? 'Tidak ada jadwal yang ditemukan.' : 'Belum ada data jadwal latihan.' ?>
                 </div>
             <?php else: ?>
-                <?php foreach ($jadwals as $i => $jadwal): ?>
+                    <?php foreach ($jadwals as $i => $jadwal): ?>
                     <?php
                     $tanggal = new DateTime($jadwal['tanggal']);
                     $status_class = match($jadwal['status']) {
@@ -415,6 +427,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         'dibatalkan' => 'bg-danger',
                         default => 'bg-warning text-dark'
                     };
+                    // Check if this is a recurring schedule
+                    $is_recurring = !empty($jadwal['catatan']) && strpos($jadwal['catatan'], '[Recurring:') !== false;
                     ?>
                     <div class="jadwal-card">
                         <div class="jadwal-card-header">
@@ -430,7 +444,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <small class="text-muted"><?= $tanggal->format('Y') ?></small>
                                 </div>
                             </div>
-                            <div class="ms-auto">
+                            <div class="ms-auto d-flex align-items-center gap-2">
+                                <?php if ($is_recurring): ?>
+                                    <i class="fas fa-redo text-info" title="Jadwal Berulang"></i>
+                                <?php endif; ?>
                                 <span class="badge <?= $status_class ?>">
                                     <?= ucfirst($jadwal['status']) ?>
                                 </span>

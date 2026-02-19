@@ -173,14 +173,27 @@ include '../../includes/header.php';
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($dresscode_list as $i => $dc): ?>
+                    <?php foreach ($dresscode_list as $i => $dc): ?>
                             <tr>
                                 <td class="text-center text-muted"><?= $offset + $i + 1 ?></td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 16px;">
-                                            <i class="fas fa-tshirt"></i>
-                                        </div>
+                                        <?php if (!empty($dc['foto'])): ?>
+                                            <?php $foto_path = '../../assets/uploads/pakaian/' . $dc['foto']; ?>
+                                            <?php if (file_exists($foto_path)): ?>
+                                                <img src="../../assets/uploads/pakaian/<?= htmlspecialchars($dc['foto']) ?>" 
+                                                     alt="<?= htmlspecialchars($dc['nama_pakaian']) ?>"
+                                                     class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            <?php else: ?>
+                                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 16px;">
+                                                    <i class="fas fa-tshirt"></i>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; font-size: 16px;">
+                                                <i class="fas fa-tshirt"></i>
+                                            </div>
+                                        <?php endif; ?>
                                         <span class="fw-500"><?= htmlspecialchars($dc['nama_pakaian']) ?></span>
                                     </div>
                                 </td>
@@ -224,7 +237,7 @@ include '../../includes/header.php';
                                 </td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-info" title="Detail"
-                                            onclick="showDetailModal(<?= $dc['id_dresscode'] ?>, '<?= htmlspecialchars($dc['nama_pakaian'], ENT_QUOTES) ?>', '<?= htmlspecialchars($dc['deskripsi'] ?? '', ENT_QUOTES) ?>', '<?= htmlspecialchars($dc['warna'] ?? '', ENT_QUOTES) ?>', '<?= $dc['status'] ?>')">
+                                            onclick="showDetailModal(<?= $dc['id_dresscode'] ?>, '<?= htmlspecialchars($dc['nama_pakaian'], ENT_QUOTES) ?>', '<?= htmlspecialchars($dc['deskripsi'] ?? '', ENT_QUOTES) ?>', '<?= htmlspecialchars($dc['warna'] ?? '', ENT_QUOTES) ?>', '<?= $dc['status'] ?>', '<?= htmlspecialchars($dc['foto'] ?? '', ENT_QUOTES) ?>')">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                     <a href="edit.php?id=<?= $dc['id_dresscode'] ?>" class="btn btn-sm btn-outline-warning" title="Edit">
@@ -252,9 +265,22 @@ include '../../includes/header.php';
                 <?php foreach ($dresscode_list as $i => $dc): ?>
                     <div class="dresscode-card p-3 border-bottom">
                         <div class="d-flex align-items-start">
-                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; font-size: 20px;">
-                                <i class="fas fa-tshirt"></i>
-                            </div>
+                            <?php if (!empty($dc['foto'])): ?>
+                                <?php $foto_path = '../../assets/uploads/pakaian/' . $dc['foto']; ?>
+                                <?php if (file_exists($foto_path)): ?>
+                                    <img src="../../assets/uploads/pakaian/<?= htmlspecialchars($dc['foto']) ?>" 
+                                         alt="<?= htmlspecialchars($dc['nama_pakaian']) ?>"
+                                         class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; font-size: 20px;">
+                                        <i class="fas fa-tshirt"></i>
+                                    </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; font-size: 20px;">
+                                    <i class="fas fa-tshirt"></i>
+                                </div>
+                            <?php endif; ?>
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h5 class="mb-0"><?= htmlspecialchars($dc['nama_pakaian']) ?></h5>
@@ -484,6 +510,11 @@ include '../../includes/header.php';
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
+                <!-- Foto Section -->
+                <div id="detailFotoContainer" class="text-center p-3 bg-light" style="display: none;">
+                    <img id="detailFoto" src="" alt="Foto Pakaian" class="img-thumbnail" style="max-height: 250px;">
+                </div>
+                
                 <!-- Profile Header -->
                 <div class="dresscode-profile-header bg-success bg-gradient text-white p-4 text-center">
                     <div class="dresscode-avatar-xl bg-white text-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow" id="detailAvatar" style="width: 100px; height: 100px; font-size: 40px;">
@@ -540,11 +571,21 @@ include '../../includes/header.php';
 
 <script>
 // Fungsi untuk menampilkan modal detail
-function showDetailModal(idDresscode, namaPakaian, deskripsi, warna, status) {
+function showDetailModal(idDresscode, namaPakaian, deskripsi, warna, status, foto) {
     // Set data dasar
     document.getElementById('detailNamaPakaian').textContent = namaPakaian || '-';
     document.getElementById('detailDeskripsi').textContent = deskripsi || 'Tidak ada deskripsi';
     document.getElementById('detailWarnaText').textContent = warna || '-';
+    
+    // Set foto
+    const fotoContainer = document.getElementById('detailFotoContainer');
+    const fotoImg = document.getElementById('detailFoto');
+    if (foto) {
+        fotoImg.src = '../../assets/uploads/pakaian/' + foto;
+        fotoContainer.style.display = 'block';
+    } else {
+        fotoContainer.style.display = 'none';
+    }
     
     // Set warna badge
     const warnaBadge = document.getElementById('detailWarnaBadge');

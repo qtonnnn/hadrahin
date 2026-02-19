@@ -56,7 +56,7 @@ $stmt->execute([$today]);
 $jadwal_hari_ini = $stmt->fetchAll();
 
 // 3. Booking Acara Mendatang (hanya status diterima dan selesai yang ditampilkan untuk anggota)
-$stmt = $pdo->query("SELECT ba.*, d.nama_pakaian as dresscode_name, d.warna as dresscode_warna, d.deskripsi as dresscode_deskripsi
+$stmt = $pdo->query("SELECT ba.*, d.nama_pakaian as dresscode_name, d.warna as dresscode_warna, d.deskripsi as dresscode_deskripsi, d.foto as dresscode_foto
 FROM booking_acara ba
 LEFT JOIN dresscode d ON ba.id_dresscode = d.id_dresscode
 WHERE ba.status IN ('diterima', 'selesai') AND ba.tanggal_acara >= CURDATE()
@@ -64,7 +64,7 @@ ORDER BY ba.tanggal_acara ASC LIMIT 5");
 $acara_mendatang = $stmt->fetchAll();
 
 // Query untuk semua acara (untuk modal dengan pagination - hanya diterima dan selesai)
-$stmt = $pdo->query("SELECT ba.id_booking, ba.nama_acara, ba.tanggal_acara, ba.lokasi, ba.status, d.nama_pakaian as dresscode_name, d.deskripsi as dresscode_deskripsi
+$stmt = $pdo->query("SELECT ba.id_booking, ba.nama_acara, ba.tanggal_acara, ba.lokasi, ba.status, d.nama_pakaian as dresscode_name, d.deskripsi as dresscode_deskripsi, d.foto as dresscode_foto
 FROM booking_acara ba
 LEFT JOIN dresscode d ON ba.id_dresscode = d.id_dresscode
 WHERE ba.status IN ('diterima', 'selesai') AND ba.tanggal_acara >= CURDATE()
@@ -1320,9 +1320,94 @@ function getContrastColorPHP($hexColor) {
             font-weight: 600;
         }
         
-        .keuangan-modal-table .tipe-pengeluaran {
+.keuangan-modal-table .tipe-pengeluaran {
             color: var(--danger);
             font-weight: 600;
+        }
+        
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .pagination-info {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        
+        .pagination-btn {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 0.6rem;
+            border: 1px solid #ddd;
+            background: white;
+            color: var(--primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(45, 106, 79, 0.2);
+        }
+        
+        .pagination-btn.active {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
+        }
+        
+        .pagination-btn.arrow-btn {
+            font-size: 1rem;
+        }
+        
+        /* Responsive pagination */
+        @media (max-width: 480px) {
+            .pagination {
+                gap: 0.25rem;
+            }
+            
+            .pagination-btn {
+                min-width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+                padding: 0 0.4rem;
+            }
+            
+            .pagination-info {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -1458,7 +1543,7 @@ function getContrastColorPHP($hexColor) {
                                         <div class="mt-2">
                                             <button class="dresscode-badge-btn" 
                                                     style="background: transparent; border: 2px solid var(--secondary); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;"
-                                                    onclick="showDresscodeDetail('<?php echo htmlspecialchars($acara['dresscode_name'] ?? 'Dresscode'); ?>', '<?php echo htmlspecialchars($acara['dresscode_warna'] ?? ''); ?>', '<?php echo htmlspecialchars($acara['dresscode_deskripsi'] ?? ''); ?>')">
+                                                    onclick="showDresscodeDetail('<?php echo htmlspecialchars($acara['dresscode_name'] ?? 'Dresscode'); ?>', '<?php echo htmlspecialchars($acara['dresscode_warna'] ?? ''); ?>', '<?php echo htmlspecialchars($acara['dresscode_deskripsi'] ?? ''); ?>', '<?php echo htmlspecialchars($acara['dresscode_foto'] ?? ''); ?>')">
                                                 <i class="fas fa-tshirt"></i>
                                                 <span><?php $dresscode_name = isset($acara['dresscode_name']) ? $acara['dresscode_name'] : 'Dresscode'; ?><?php echo htmlspecialchars($dresscode_name); ?></span>
                                                 <?php if ($acara['dresscode_warna']): ?>
@@ -1611,29 +1696,7 @@ function getContrastColorPHP($hexColor) {
                             <p>Belum ada riwayat absensi</p>
                         </div>
                     <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Pengurus Tim -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h3><i class="fas fa-users"></i> Pengurus Tim</h3>
-                    <button type="button" class="view-all" onclick="openModal('kontakModal')">Kontak Lain</button>
-                </div>
-                <div class="card-content">
-                    <div class="pengurus-grid">
-                        <?php foreach ($pengurus as $pengurus_item): ?>
-                        <div class="pengurus-card">
-                            <div class="pengurus-icon">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
-                            <div class="pengurus-nama"><?php echo htmlspecialchars($pengurus_item['nama_lengkap']); ?></div>
-                            <div class="pengurus-peran"><?php echo ucfirst($pengurus_item['peran']); ?></div>
-                            <div class="pengurus-hp"><?php echo htmlspecialchars($pengurus_item['no_hp']); ?></div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
+</div>
             </div>
 
             <!-- Quick Actions -->
@@ -1699,14 +1762,15 @@ function getContrastColorPHP($hexColor) {
                             <?php endforeach; ?>
                         </ul>
                         
-                        <!-- Pagination -->
+<!-- Pagination -->
                         <?php if ($total_pages_jadwal > 1): ?>
-                        <div class="pagination" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
-                            <button class="pagination-btn" onclick="changeJadwalPage(1)" style="padding: 0.5rem 1rem; border: 1px solid var(--secondary); background: white; color: var(--secondary); border-radius: 4px; cursor: pointer;">«</button>
-                            <?php for($i = 1; $i <= $total_pages_jadwal; $i++): ?>
-                            <button class="pagination-btn page-jadwal-btn <?php echo $i === 1 ? 'active' : ''; ?>" onclick="changeJadwalPage(<?php echo $i; ?>)" style="padding: 0.5rem 1rem; border: 1px solid var(--secondary); <?php echo $i === 1 ? 'background: var(--secondary); color: white;' : 'background: white; color: var(--secondary);'; ?> border-radius: 4px; cursor: pointer;"><?php echo $i; ?></button>
-                            <?php endfor; ?>
-                            <button class="pagination-btn" onclick="changeJadwalPage(<?php echo $total_pages_jadwal; ?>)" style="padding: 0.5rem 1rem; border: 1px solid var(--secondary); background: white; color: var(--secondary); border-radius: 4px; cursor: pointer;">»</button>
+                        <div class="pagination-container">
+                            <div class="pagination-info">
+                                Halaman <span id="jadwalPageInfo">1</span> dari <?php echo $total_pages_jadwal; ?>
+                            </div>
+                            <div class="pagination" id="jadwalPaginationButtons">
+                                <!-- Rendered by JavaScript when modal opens -->
+                            </div>
                         </div>
                         <?php endif; ?>
                     <?php else: ?>
@@ -1760,14 +1824,15 @@ function getContrastColorPHP($hexColor) {
                             <?php endforeach; ?>
                         </ul>
                         
-                        <!-- Pagination -->
+<!-- Pagination -->
                         <?php if ($total_pages_acara > 1): ?>
-                        <div class="pagination" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
-                            <button class="pagination-btn" onclick="changeAcaraPage(1)" style="padding: 0.5rem 1rem; border: 1px solid var(--secondary); background: white; color: var(--secondary); border-radius: 4px; cursor: pointer;">«</button>
-                            <?php for($i = 1; $i <= $total_pages_acara; $i++): ?>
-                            <button class="pagination-btn page-acara-btn <?php echo $i === 1 ? 'active' : ''; ?>" onclick="changeAcaraPage(<?php echo $i; ?>)" style="padding: 0.5rem 1rem; border: 1px solid var(--secondary); <?php echo $i === 1 ? 'background: var(--secondary); color: white;' : 'background: white; color: var(--secondary);'; ?> border-radius: 4px; cursor: pointer;"><?php echo $i; ?></button>
-                            <?php endfor; ?>
-                            <button class="pagination-btn" onclick="changeAcaraPage(<?php echo $total_pages_acara; ?>)" style="padding: 0.5rem 1rem; border: 1px solid var(--secondary); background: white; color: var(--secondary); border-radius: 4px; cursor: pointer;">»</button>
+                        <div class="pagination-container">
+                            <div class="pagination-info">
+                                Halaman <span id="acaraPageInfo">1</span> dari <?php echo $total_pages_acara; ?>
+                            </div>
+                            <div class="pagination" id="acaraPaginationButtons">
+                                <!-- Rendered by JavaScript when modal opens -->
+                            </div>
                         </div>
                         <?php endif; ?>
                     <?php else: ?>
@@ -1969,23 +2034,37 @@ function getContrastColorPHP($hexColor) {
 
     <!-- Modal Dresscode Detail -->
     <div class="modal-overlay" id="dresscodeModal">
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
-                <h3><i class="fas fa-tshirt me-2"></i>Detail Dresscode</h3>
+                <h3><i class="fas fa-tshirt"></i> Detail Dresscode</h3>
                 <button type="button" class="modal-close" onclick="closeModal('dresscodeModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div id="dresscodeDetailContent">
-                    <div class="text-center mb-3">
-                        <div style="width: 60px; height: 60px; background-color: var(--light); border-radius: 50%; margin: 0 auto; border: 3px solid var(--secondary); display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-tshirt" style="font-size: 1.5rem; color: var(--secondary);"></i>
+                    <!-- Foto Section -->
+                    <div id="dresscodeFotoContainer" style="display: none; margin-bottom: 1.5rem;">
+                        <div style="background-color: var(--light); border-radius: var(--border-radius); padding: 1rem; display: flex; justify-content: center; align-items: center; min-height: 200px;">
+                            <img id="dresscodeFoto" src="" alt="Foto Pakaian" style="max-height: 200px; max-width: 100%; border-radius: 6px;">
                         </div>
                     </div>
-                    <h4 id="dresscodeName" class="text-center mb-2" style="color: var(--primary); font-size: 1.3rem;"></h4>
-                    <div id="dresscodeColorInfo" class="text-center mb-3">
-                        <span class="badge" id="dresscodeColorBadge" style="font-size: 0.9rem; padding: 0.5rem 1rem;"></span>
+                    
+                    <!-- Icon Display -->
+                    <div id="dresscodeIconContainer" style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="width: 80px; height: 80px; background-color: var(--secondary); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(45, 106, 79, 0.2);">
+                            <i class="fas fa-tshirt" style="font-size: 2rem; color: white;"></i>
+                        </div>
                     </div>
-                    <div id="dresscodeDescription" class="text-center text-muted mb-3" style="font-size: 0.9rem; font-style: italic;"></div>
+                    
+                    <!-- Name -->
+                    <h3 id="dresscodeName" style="color: #000000; font-size: 1.5rem; margin: 0 0 1rem; text-align: center;"></h3>
+                    
+                    <!-- Color Badge -->
+                    <div id="dresscodeColorInfo" style="text-align: center; margin-bottom: 1.5rem;">
+                        <span id="dresscodeColorBadge" style="display: inline-block; font-size: 0.9rem; padding: 0.6rem 1.2rem; border-radius: 20px; font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);"></span>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div id="dresscodeDescription" style="color: #000000; font-size: 0.95rem; text-align: center; font-style: italic; line-height: 1.5; margin-bottom: 1rem;"></div>
                 </div>
             </div>
         </div>
@@ -2002,22 +2081,31 @@ function getContrastColorPHP($hexColor) {
                 <?php if (count($semua_dresscode) > 0): ?>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
                         <?php foreach ($semua_dresscode as $dresscode): ?>
+                        <?php 
+                        $foto_path = '../assets/uploads/pakaian/' . $dresscode['foto'];
+                        $has_foto = !empty($dresscode['foto']) && file_exists($foto_path);
+                        ?>
                         <div class="dresscode-card" 
-                             style="background-color: var(--light); border-radius: var(--border-radius); padding: 1rem; text-align: center; border: 1px solid rgba(45, 106, 79, 0.1); cursor: pointer; transition: all 0.3s;"
-                             onclick="showDresscodeDetail('<?php echo htmlspecialchars($dresscode['nama_pakaian']); ?>', '<?php echo htmlspecialchars($dresscode['warna'] ?? ''); ?>', '<?php echo htmlspecialchars($dresscode['deskripsi'] ?? ''); ?>')"
-                             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow)';"
-                             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none';">
-                            <?php if ($dresscode['warna']): ?>
-                            <div style="width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 0.8rem; border: 2px solid var(--secondary); display: flex; align-items: center; justify-content: center; background-color: <?php echo htmlspecialchars($dresscode['warna']); ?>;">
-                                <span style="font-size: 0.7rem; color: <?php echo getContrastColorPHP($dresscode['warna']); ?>; font-weight: bold;"><?php echo htmlspecialchars($dresscode['warna']); ?></span>
+                             style="background-color: white; border-radius: var(--border-radius); padding: 1.2rem; text-align: center; border: 2px solid rgba(45, 106, 79, 0.15); cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;"
+                             onclick="showDresscodeDetail('<?php echo htmlspecialchars($dresscode['nama_pakaian']); ?>', '<?php echo htmlspecialchars($dresscode['warna'] ?? ''); ?>', '<?php echo htmlspecialchars($dresscode['deskripsi'] ?? ''); ?>', '<?php echo htmlspecialchars($dresscode['foto'] ?? ''); ?>')"
+                             onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 8px 20px rgba(45, 106, 79, 0.15)'; this.style.borderColor='var(--secondary)';"
+                             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'; this.style.borderColor='rgba(45, 106, 79, 0.15)';">
+                            <!-- Color/Image Display -->
+                            <?php if ($has_foto): ?>
+                            <div style="width: 60px; height: 60px; border-radius: 8px; margin: 0 auto 1rem; border: 2px solid var(--secondary); overflow: hidden; background-color: var(--light); display: flex; align-items: center; justify-content: center;">
+                                <img src="../assets/uploads/pakaian/<?php echo htmlspecialchars($dresscode['foto']); ?>" alt="<?php echo htmlspecialchars($dresscode['nama_pakaian']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <?php elseif ($dresscode['warna']): ?>
+                            <div style="width: 60px; height: 60px; border-radius: 8px; margin: 0 auto 1rem; border: 2px solid var(--secondary); display: flex; align-items: center; justify-content: center; background-color: <?php echo htmlspecialchars($dresscode['warna']); ?>;">
+                                <span style="font-size: 0.65rem; color: <?php echo getContrastColorPHP($dresscode['warna']); ?>; font-weight: bold; text-align: center; padding: 0.25rem;"><?php echo htmlspecialchars($dresscode['warna']); ?></span>
                             </div>
                             <?php else: ?>
-                            <div style="width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 0.8rem; border: 2px solid var(--secondary); display: flex; align-items: center; justify-content: center; background-color: #f0f0f0;">
-                                <i class="fas fa-tshirt" style="color: #999;"></i>
+                            <div style="width: 60px; height: 60px; border-radius: 8px; margin: 0 auto 1rem; border: 2px solid var(--secondary); display: flex; align-items: center; justify-content: center; background-color: var(--light);">
+                                <i class="fas fa-tshirt" style="color: var(--secondary); font-size: 1.3rem;"></i>
                             </div>
                             <?php endif; ?>
-                            <div style="font-weight: 600; color: var(--primary); margin-bottom: 0.3rem; font-size: 0.9rem;"><?php echo htmlspecialchars($dresscode['nama_pakaian']); ?></div>
-                            <div style="font-size: 0.75rem; color: #666;"><?php echo htmlspecialchars($dresscode['warna'] ?? '-'); ?></div>
+                            <div style="font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; font-size: 0.95rem;"><?php echo htmlspecialchars($dresscode['nama_pakaian']); ?></div>
+                            <div style="font-size: 0.8rem; color: var(--secondary); font-weight: 500;"><?php echo htmlspecialchars($dresscode['warna'] ?? '-'); ?></div>
                         </div>
                         <?php endforeach; ?>
                     </div>
@@ -2108,7 +2196,7 @@ function getContrastColorPHP($hexColor) {
             observer.observe(card);
         });
         
-        // Modal Functions
+// Modal Functions
         function openModal(modalId) {
             try {
                 const modal = document.getElementById(modalId);
@@ -2139,6 +2227,14 @@ function getContrastColorPHP($hexColor) {
                 setTimeout(() => {
                     if (loading) loading.classList.remove('active');
                     if (content) content.style.display = 'block';
+                    
+                    // Render pagination when modal opens
+                    if (modalId === 'jadwalModal' && totalJadwalPages > 1) {
+                        renderJadwalPagination(1);
+                    }
+                    if (modalId === 'acaraModal' && totalAcaraPages > 1) {
+                        renderAcaraPagination(1);
+                    }
                 }, 300);
             } catch (err) {
                 // silently ignore errors in openModal
@@ -2157,25 +2253,82 @@ function getContrastColorPHP($hexColor) {
             }
         }
         
-        // Pagination Jadwal Latihan
+// Pagination Jadwal Latihan
+        let currentJadwalPage = 1;
+        const totalJadwalPages = <?php echo $total_pages_jadwal; ?>;
+        
+        function renderJadwalPagination(page) {
+            const container = document.getElementById('jadwalPaginationButtons');
+            if (!container) return;
+            
+            let html = '';
+            const maxVisible = 3;
+            let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalJadwalPages, startPage + maxVisible - 1);
+            
+            // Adjust start if we're near the end
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            // First button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeJadwalPage(1)" title="Halaman Pertama" ${page <= 1 ? 'disabled' : ''}>«</button>`;
+            
+            // Previous button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeJadwalPage(${page - 1})" id="jadwalPrevBtn" title="Sebelumnya" ${page <= 1 ? 'disabled' : ''}>‹</button>`;
+            
+            // Ellipsis if needed
+            if (startPage > 1) {
+                html += `<button class="pagination-btn" onclick="changeJadwalPage(1)">1</button>`;
+                if (startPage > 2) {
+                    html += `<span class="pagination-ellipsis" style="padding: 0 8px; color: #666;">...</span>`;
+                }
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === page;
+                html += `<button class="pagination-btn ${isActive ? 'active' : ''}" onclick="changeJadwalPage(${i})" ${isActive ? '' : ''}>${i}</button>`;
+            }
+            
+            // Ellipsis if needed
+            if (endPage < totalJadwalPages) {
+                if (endPage < totalJadwalPages - 1) {
+                    html += `<span class="pagination-ellipsis" style="padding: 0 8px; color: #666;">...</span>`;
+                }
+                html += `<button class="pagination-btn" onclick="changeJadwalPage(${totalJadwalPages})">${totalJadwalPages}</button>`;
+            }
+            
+            // Next button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeJadwalPage(${page + 1})" id="jadwalNextBtn" title="Selanjutnya" ${page >= totalJadwalPages ? 'disabled' : ''}>›</button>`;
+            
+            // Last button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeJadwalPage(${totalJadwalPages})" title="Halaman Terakhir" ${page >= totalJadwalPages ? 'disabled' : ''}>»</button>`;
+            
+            container.innerHTML = html;
+        }
+        
         function changeJadwalPage(page) {
+            // Validate page number
+            if (page < 1 || page > totalJadwalPages) return;
+            
+            currentJadwalPage = page;
             const itemsPerPage = 3;
             const list = document.getElementById('jadwalList');
             const items = <?php echo json_encode($semua_jadwal); ?>;
             
-            // Update buttons
-            document.querySelectorAll('.page-jadwal-btn').forEach((btn, index) => {
-                btn.classList.toggle('active', index + 1 === page);
-                btn.style.background = index + 1 === page ? 'var(--secondary)' : 'white';
-                btn.style.color = index + 1 === page ? 'white' : 'var(--secondary)';
-            });
+            // Update page info
+            document.getElementById('jadwalPageInfo').textContent = page;
+            
+            // Re-render pagination buttons
+            renderJadwalPagination(page);
             
             // Get items for this page
             const start = (page - 1) * itemsPerPage;
             const end = start + itemsPerPage;
             const pageItems = items.slice(start, end);
             
-            // Render items - gunakan 'Latihan' + ID karena database tidak punya nama_sesi
+            // Render items
             list.innerHTML = pageItems.map(jadwal => `
                 <li class="jadwal-modal-item">
                     <h4>Latihan #${jadwal.id_jadwal || '-'}</h4>
@@ -2189,17 +2342,74 @@ function getContrastColorPHP($hexColor) {
         }
         
         // Pagination Jadwal Acara
+        let currentAcaraPage = 1;
+        const totalAcaraPages = <?php echo $total_pages_acara; ?>;
+        
+        function renderAcaraPagination(page) {
+            const container = document.getElementById('acaraPaginationButtons');
+            if (!container) return;
+            
+            let html = '';
+            const maxVisible = 3;
+            let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalAcaraPages, startPage + maxVisible - 1);
+            
+            // Adjust start if we're near the end
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            // First button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeAcaraPage(1)" title="Halaman Pertama" ${page <= 1 ? 'disabled' : ''}>«</button>`;
+            
+            // Previous button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeAcaraPage(${page - 1})" id="acaraPrevBtn" title="Sebelumnya" ${page <= 1 ? 'disabled' : ''}>‹</button>`;
+            
+            // Ellipsis if needed
+            if (startPage > 1) {
+                html += `<button class="pagination-btn" onclick="changeAcaraPage(1)">1</button>`;
+                if (startPage > 2) {
+                    html += `<span class="pagination-ellipsis" style="padding: 0 8px; color: #666;">...</span>`;
+                }
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === page;
+                html += `<button class="pagination-btn ${isActive ? 'active' : ''}" onclick="changeAcaraPage(${i})" ${isActive ? '' : ''}>${i}</button>`;
+            }
+            
+            // Ellipsis if needed
+            if (endPage < totalAcaraPages) {
+                if (endPage < totalAcaraPages - 1) {
+                    html += `<span class="pagination-ellipsis" style="padding: 0 8px; color: #666;">...</span>`;
+                }
+                html += `<button class="pagination-btn" onclick="changeAcaraPage(${totalAcaraPages})">${totalAcaraPages}</button>`;
+            }
+            
+            // Next button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeAcaraPage(${page + 1})" id="acaraNextBtn" title="Selanjutnya" ${page >= totalAcaraPages ? 'disabled' : ''}>›</button>`;
+            
+            // Last button
+            html += `<button class="pagination-btn arrow-btn" onclick="changeAcaraPage(${totalAcaraPages})" title="Halaman Terakhir" ${page >= totalAcaraPages ? 'disabled' : ''}>»</button>`;
+            
+            container.innerHTML = html;
+        }
+        
         function changeAcaraPage(page) {
+            // Validate page number
+            if (page < 1 || page > totalAcaraPages) return;
+            
+            currentAcaraPage = page;
             const itemsPerPage = 3;
             const list = document.getElementById('acaraList');
             const items = <?php echo json_encode($semua_acara); ?>;
             
-            // Update buttons
-            document.querySelectorAll('.page-acara-btn').forEach((btn, index) => {
-                btn.classList.toggle('active', index + 1 === page);
-                btn.style.background = index + 1 === page ? 'var(--secondary)' : 'white';
-                btn.style.color = index + 1 === page ? 'white' : 'var(--secondary)';
-            });
+            // Update page info
+            document.getElementById('acaraPageInfo').textContent = page;
+            
+            // Re-render pagination buttons
+            renderAcaraPagination(page);
             
             // Get items for this page
             const start = (page - 1) * itemsPerPage;
@@ -2251,14 +2461,27 @@ function getContrastColorPHP($hexColor) {
         });
         
         // Dresscode Detail Modal Function
-        function showDresscodeDetail(name, color, description) {
+        function showDresscodeDetail(name, color, description, foto) {
             const modal = document.getElementById('dresscodeModal');
             const nameEl = document.getElementById('dresscodeName');
             const colorBadge = document.getElementById('dresscodeColorBadge');
             const descEl = document.getElementById('dresscodeDescription');
+            const fotoContainer = document.getElementById('dresscodeFotoContainer');
+            const iconContainer = document.getElementById('dresscodeIconContainer');
+            const fotoImg = document.getElementById('dresscodeFoto');
             
             // Set dresscode name
             nameEl.textContent = name;
+            
+            // Set foto
+            if (foto) {
+                fotoImg.src = '../assets/uploads/pakaian/' + foto;
+                fotoContainer.style.display = 'block';
+                iconContainer.style.display = 'none';
+            } else {
+                fotoContainer.style.display = 'none';
+                iconContainer.style.display = 'block';
+            }
             
             // Set color badge
             if (color) {
