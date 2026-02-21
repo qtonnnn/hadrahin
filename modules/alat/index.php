@@ -453,17 +453,6 @@ include '../../includes/header.php';
                         <!-- Data akan diisi oleh JavaScript -->
                     </div>
                 </div>
-
-                <!-- Riwayat Pengguna -->
-                <div class="mb-4">
-                    <h6 class="text-primary mb-2">
-                        <i class="fas fa-history me-1"></i>Riwayat Pengguna
-                        <span class="badge bg-secondary ms-2" id="detailTotalRiwayat">0</span>
-                    </h6>
-                    <div id="detailRiwayatPengguna">
-                        <!-- Data akan diisi oleh JavaScript -->
-                    </div>
-                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -681,38 +670,6 @@ function showDetailModal(idAlat, namaAlat, jumlahBaik, jumlahRusak, keterangan) 
         penggunaAktifContainer.innerHTML = html;
     } else {
         penggunaAktifContainer.innerHTML = '<p class="text-muted mb-0">Tidak ada pengguna aktif</p>';
-    }
-
-    // Set riwayat pengguna
-    const riwayatContainer = document.getElementById('detailRiwayatPengguna');
-
-    // Update total riwayat pengguna
-    document.getElementById('detailTotalRiwayat').textContent = penggunaList.length;
-
-    if (penggunaList.length > 0) {
-        let html = '<div class="table-responsive"><table class="table table-sm table-hover">';
-        html += '<thead class="table-light"><tr><th>Nama</th><th>Tanggal</th><th>Status</th></tr></thead><tbody>';
-
-        penggunaList.forEach(user => {
-            const statusBadge = user.status === 'aktif' ? 'bg-info' : 'bg-secondary';
-            const statusText = user.status === 'aktif' ? 'Aktif' : 'Non-aktif';
-            const tanggal = new Date(user.tanggal_diberikan).toLocaleDateString('id-ID');
-
-            html += `
-                <tr style="cursor: pointer;" onclick="showUserDetailModalById(${user.id_user}, ${user.id_alat || idAlat})" title="Klik untuk lihat detail">
-                    <td>
-                        <i class="fas fa-user text-muted me-1"></i>${escapeHtml(user.nama_lengkap || 'User')}
-                    </td>
-                    <td>${tanggal}</td>
-                    <td><span class="badge ${statusBadge}">${statusText}</span></td>
-                </tr>
-            `;
-        });
-
-        html += '</tbody></table></div>';
-        riwayatContainer.innerHTML = html;
-    } else {
-        riwayatContainer.innerHTML = '<p class="text-muted mb-0">Belum ada riwayat pengguna</p>';
     }
 
     // Tampilkan modal

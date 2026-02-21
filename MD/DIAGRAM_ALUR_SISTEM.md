@@ -4,6 +4,27 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
 
 ---
 
+## CATATAN PENTING - PERUBAHAN SISTEM
+
+> **Versi Sistem Saat Ini:**
+> - **Role User:** Admin dan Anggota (TIDAK ADA role Pembina)
+> - **Validasi:** Menggunakan API real-time untuk validasi input
+> - **Modul Booking:** Hanya dapat diakses oleh Admin
+> - **Modul Absensi:** Admin dapat input absensi anggota
+> - **Rate Limiting:** 5x percobaan gagal = blokir 15 menit
+
+---
+
+### Ringkasan Perubahan dari Diagram Asli:
+
+1. **Role User:** Hanya Admin dan Anggota (hapus Pembina)
+2. **bukti_kas:** Direktori ada tapi tidak digunakan
+3. **API Validation:** Semua form menggunakan API real-time untuk validasi
+
+---
+
+---
+
 ## 1. Arsitektur Sistem
 
 ```
@@ -92,17 +113,17 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
                         │               └──────────┬──────────┘
                         │                          │
                         │                          ▼
-                        │               ┌────────────────────┐
-                        │               │ Auto-refresh Timer │
-                        │               │ (5/10/15 menit)    │
-                        │               └─────────┬──────────┘
-                        │                         │
-                        │                         ▼
-                        │               ┌────────────────────┐
-                        │               │ Cek Ulang Rate     │
-                        │               │ Limit              │
-                        │               └─────────┬──────────┘
-                        │                         │
+                        │              ┌────────────────────┐
+                        │              │ Auto-refresh Timer │
+                        │              │ (15 menit)         │
+                        │              └─────────┬──────────┘
+                        │                          │
+                        │                          ▼
+                        │              ┌────────────────────┐
+                        │              │ Cek Ulang Rate     │
+                        │              │ Limit              │
+                        │              └─────────┬──────────┘
+                        │                          │
                         └─────────────────────────┘
                                       │
                          ┌────────────┴────────────┐
@@ -127,7 +148,7 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
            ▼                         ▼
 ┌────────────────────┐    ┌────────────────────┐
 │  Cek Status Akun   │    │ Tampilkan Error    │
-│  (field 'status')  │    │ "Username tidak    │
+│  (status_aktif)   │    │ "Username tidak    │
 └─────────┬──────────┘    │ ditemukan!"        │
           │               └────────────────────┘
           │
@@ -151,14 +172,13 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
 ┌───────────────┐  ┌────────────────────┐
 │ Reset Rate    │  │ Record Failed      │
 │ Limit (Sukses)│  │ Attempt & Cek      │
-└───────┬───────┘  │ Batas (12x gagal)  │
+└───────┬───────┘  │ Batas (5x gagal)  │
         │          └─────────┬──────────┘
         │                    │
         │                    ▼
         │          ┌────────────────────┐
-        │          │ Tampilkan Error    │
-        │          │ "Password salah!"  │
-        │          │ + Sisa Percobaan   │
+        │          │ Tampilkan Error   │
+        │          │ "Password salah!" │
         │          └────────────────────┘
         │
         ▼
@@ -168,10 +188,11 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
 │ Berdasarkan   │
 │ Peran User    │
 │ - Admin       │
-│ - Pembina     │
 │ - Anggota     │
 └───────────────┘
 ```
+
+> **Catatan:** Rate limit berlaku untuk 5x percobaan gagal, dengan blokir 15 menit.
 
 ---
 
@@ -192,42 +213,43 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
                           │  (session 'peran')  │
                           └──────────┬──────────┘
                                      │
-      ┌──────────────────────────────┼──────────────────────────────┐
-      │              │              │              │               │
-      ▼              ▼              ▼              ▼               ▼
-┌───────────┐  ┌───────────┐  ┌───────────┐  ┌─────────────────────┐
-│   ADMIN   │  │  PEMBINA  │  │  ANGGOTA  │  │   Default/Fallback  │
-└─────┬─────┘  └─────┬─────┘  └─────┬─────┘  └─────────────────────┘
-      │              │              │
-      ▼              ▼              ▼
-┌───────────┐  ┌───────────┐  ┌───────────┐
-│ dashboard │  │ dashboard │  │ dashboard │
-│ /admin.php│  │/pembina.php│ │/anggota.php│
-└───────────┘  └───────────┘  └───────────┘
-      │              │              │
-      ▼              ▼              ▼
+                    ┌─────────────────┴─────────────────┐
+                    │                                       │
+                    ▼                                       ▼
+            ┌───────────┐                           ┌───────────┐
+            │   ADMIN   │                           │  ANGGOTA  │
+            └─────┬─────┘                           └─────┬─────┘
+                  │                                       │
+                  ▼                                       ▼
+            ┌───────────┐                           ┌───────────┐
+            │ dashboard  │                           │ dashboard  │
+            │ /admin.php│                           │/anggota.php│
+            └───────────┘                           └───────────┘
+                  │                                       │
+                  ▼                                       ▼
 ┌───────────────────────────────────────────────────────────────┐
 │                    AKSES MENU BERDASARKAN PERAN               │
 ├───────────────────────────────────────────────────────────────┤
 │                                                               │
-│  ┌────────────────┬────────────────┬────────────────┐        │
-│  │     ADMIN      │     PEMBINA    │     ANGGOTA    │        │
-│  ├────────────────┼────────────────┼────────────────┤        │
-│  │ ✓ Manajemen    │ ✓ Jadwal       │ ✓ Lihat Jadwal │        │
-│  │   User         │   Latihan      │   Latihan      │        │
-│  │ ✓ Jadwal       │ ✓ Absensi      │ ✓ Absensi      │        │
-│  │   Latihan      │ ✓ Booking      │ ✓ Lihat Acara  │        │
-│  │ ✓ Booking      │   Acara        │ ✓ Inventaris   │        │
-│  │   Acara        │ ✓ Dresscode    │ ✓ Keuangan     │        │
-│  │ ✓ Dresscode    │ ✓ Inventaris   │                │        │
-│  │ ✓ Inventaris   │ ✓ Keuangan     │                │        │
-│  │ ✓ Keuangan     │                │                │        │
-│  │ ✓ Lihat Data   │                │                │        │
-│  │   Semua User   │                │                │        │
-│  └────────────────┴────────────────┴────────────────┘        │
+│  ┌────────────────┬────────────────┐                         │
+│  │     ADMIN      │     ANGGOTA    │                         │
+│  ├────────────────┼────────────────┤                         │
+│  │ ✓ Manajemen    │ ✓ Lihat Jadwal │                         │
+│  │   User        │   Latihan      │                         │
+│  │ ✓ Jadwal      │ ✓ Absensi      │                         │
+│  │   Latihan      │ ✓ Booking      │                         │
+│  │ ✓ Absensi     │   Acara        │                         │
+│  │ ✓ Booking     │ ✓ Dresscode    │                         │
+│  │   Acara       │ ✓ Inventaris   │                         │
+│  │ ✓ Dresscode  │ ✓ Keuangan     │                         │
+│  │ ✓ Inventaris │                │                         │
+│  │ ✓ Keuangan   │                │                         │
+│  └────────────────┴────────────────┘                         │
 │                                                               │
 └───────────────────────────────────────────────────────────────┘
 ```
+
+> **Catatan:** Sistem hanya memiliki 2 peran: Admin dan Anggota. Tidak ada role Pembina.
 
 ---
 
@@ -244,7 +266,7 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
 │                      AKSES MENAMPILKAN JADWAL                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  Semua user (Admin, Pembina, Anggota) dapat:                               │
+│  Semua user (Admin, Anggota) dapat:                               │
 │  ├── Lihat Jadwal Terbaru (1 jadwal terakhir)                              │
 │  ├── Lihat Semua Jadwal (semua jadwal latihan)                             │
 │  └── Lihat History Jadwal (jadwal yang sudah berlalu)                      │
@@ -260,8 +282,8 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
                          ┌─────────────────────────┐
                          │   Pilih Tampilan:       │
                          │   - Jadwal Terbaru      │
-                         │   - Semua Jadwal        │
-                         │   - History Jadwal      │
+                         │   - Semua Jadwal       │
+                         │   - History Jadwal     │
                          └────────────┬────────────┘
                                       │
                                       ▼
@@ -284,13 +306,13 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
                          └─────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    FITUR ABSENSI (ADMIN/PEMBINA SAJA)                       │
+│                    FITUR ABSENSI (ADMIN SAJA)                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  ONLY Admin & Pembina dapat melakukan absensi:                             │
+│  ONLY Admin yang dapat melakukan absensi:                             │
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  Admin/Pembina mengakses halaman absensi                            │   │
+│  │  Admin mengakses halaman absensi                                     │   │
 │  │                                    │                                │   │
 │  │                                    ▼                                │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
@@ -305,7 +327,7 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
 │  │                                    │                                │   │
 │  │                                    ▼                                │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  Admin/Pembina dapat:                                       │   │   │
+│  │  │  Admin dapat:                                       │   │   │
 │  │  │  - Klik anggota untuk ubah status absensi                   │   │   │
 │  │  │  - Pilih status: Hadir, Izin, Alpa                          │   │   │
 │  │  │  - Simpan perubahan                                         │   │   │
@@ -322,7 +344,7 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
 │  │  └─────────────────────────────────────────────────────────────┘   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
-│  Admin & Pembina juga dapat:                                                │
+│  Admin juga dapat:                                                │
 │  ├── Buat Jadwal Latihan Baru                                               │
 │  │   └── Input: Tanggal, Jam, Lokasi, Materi, Catatan                      │
 │  ├── Lihat Laporan Absensi Semua Anggota                                    │
@@ -385,7 +407,7 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
               ┌────────────────────┐    │ (Foto/Video)       │
               │ Tampilkan Pesan    │    └────────────────────┘
               │ "Booking Dikirim!"
-              └────────────────────┘
+              └────────────────────┘877561
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         UPLOAD DOKUMENTASI                                  │
@@ -522,26 +544,18 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
               │ - Keterangan       │              │
               │ - Tanggal          │              │
               │ - Bukti Transaksi  │              │
-              │   (Upload File)    │              │
+              │   (BELUM ADA     │              │
+              │    FITUR UPLOAD) │              │
               └─────────┬──────────┘              │
                         │                         │
                         ▼                         ▼
               ┌────────────────────┐    ┌────────────────────┐
-              │ Upload Bukti       │    │ Tampilkan:         │
-              │ (Jika ada)         │    │ - Saldo Kas        │
+              │ Simpan ke Database │    │ Tampilkan:         │
+              │ (tabel keuangan)   │    │ - Saldo Kas        │
               └─────────┬──────────┘    │ - Total Pemasukan  │
                         │               │ - Total Pengeluaran│
-                        ▼               │ - Grafik Keuangan  │
-              ┌────────────────────┐    │ - Tabel Transaksi  │
-              │ Simpan ke Database │    └────────────────────┘
-              │ (tabel keuangan)   │
-              │ & Upload File      │
-              │ (assets/uploads/   │
-              │  bukti_kas/)       │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
+                        ▼               │ - Tabel Transaksi  │
+              ┌────────────────────┐    └────────────────────┘
               │ Update Saldo Kas   │
               │ Otomatis           │
               └─────────┬──────────┘
@@ -552,6 +566,11 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
               │ "Transaksi         │
               │ Disimpan!"         │
               └────────────────────┘
+
+> **CATATAN PENTING:** 
+> - Direktori `assets/uploads/bukti_kas/` **ADA** namun **TIDAK DIGUNAKAN**
+> - Saat ini tidak ada fitur upload bukti transaksi
+> - Fitur upload bukti kas perlu ditambahkan di masa depan
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         LAPORAN KEUANGAN                                    │
@@ -740,63 +759,66 @@ Dokumen ini menjelaskan alur sistem aplikasi informasi grup hadrah secara kompre
 │                    MATRIKS HAK AKSES PERAN USER                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-┌────────────────────────────────────┬──────────┬──────────┬──────────┐
-│            FITUR                   │  ADMIN   │  PEMBINA │  ANGGOTA │
-├────────────────────────────────────┼──────────┼──────────┼──────────┤
-│ AUTENTIKASI                        │          │          │          │
-│ ├─ Login                          │    ✓     │    ✓     │    ✓     │
-│ ├─ Logout                         │    ✓     │    ✓     │    ✓     │
-│ └─ Reset Password                 │    ✓     │    ✓     │    ✓     │
-├────────────────────────────────────┼──────────┼──────────┼──────────┤
-│ MANAJEMEN USER                     │          │          │          │
-│ ├─ Lihat Semua User               │    ✓     │    ✗     │    ✗     │
-│ ├─ Tambah User                    │    ✓     │    ✗     │    ✗     │
-│ ├─ Edit User                      │    ✓     │    ✗     │    ✗     │
-│ ├─ Hapus User                     │    ✓     │    ✗     │    ✗     │
-│ └─ Kelola Peran                   │    ✓     │    ✗     │    ✗     │
-├────────────────────────────────────┼──────────┼──────────┼──────────┤
-│ JADWAL LATIHAN                     │          │          │          │
-│ ├─ Lihat Jadwal                   │    ✓     │    ✓     │    ✓     │
-│ ├─ Buat Jadwal                    │    ✓     │    ✓     │    ✗     │
-│ ├─ Edit Jadwal                    │    ✓     │    ✓     │    ✗     │
-│ ├─ Hapus Jadwal                   │    ✓     │    ✗     │    ✗     │
-│ └─ Ganti Status Jadwal            │    ✓     │    ✓     │    ✗     │
-├────────────────────────────────────┼──────────┼──────────┼──────────┤
-│ ABSENSI                            │          │          │          │
-│ ├─ Lihat Jadwal Terbaru            │    ✓     │    ✓     │    ✓     │
-│ ├─ Lihat Semua Jadwal              │    ✓     │    ✓     │    ✓     │
-│ ├─ Lihat History Jadwal            │    ✓     │    ✓     │    ✓     │
-│ ├─ Lihat Detail Jadwal             │    ✓     │    ✓     │    ✓     │
-│ ├─ Input Absensi Anggota           │    ✓     │    ✓     │    ✗     │
-│ ├─ Lihat Absensi Semua Anggota    │    ✓     │    ✓     │    ✗     │
-│ └─ Export Data Absensi            │    ✓     │    ✓     │    ✗     │
-├────────────────────────────────────┼──────────┼──────────┼──────────┤
-│ BOOKING ACARA                      │          │          │          │
-│ ├─ Lihat Booking                  │    ✓     │    ✓     │    ✓     │
-│ ├─ Buat Booking                   │    ✓     │    ✓     │    ✗     │
-│ ├─ Update Status Booking          │    ✓     │    ✓     │    ✗     │
-│ ├─ Upload Dokumentasi             │    ✓     │    ✓     │    ✗     │
-│ └─ Hapus Booking                  │    ✓     │    ✗     │    ✗     │
-├────────────────────────────────────┼──────────┼──────────┼──────────┤
-│ INVENTARIS ALAT                    │          │          │          │
-│ ├─ Lihat Inventaris               │    ✓     │    ✓     │    ✓     │
-│ ├─ Tambah Alat                    │    ✓     │    ✗     │    ✗     │
-│ ├─ Edit Stok Alat                 │    ✓     │    ✗     │    ✗     │
-│ └─ Hapus Alat                     │    ✓     │    ✗     │    ✗     │
-├────────────────────────────────────┼──────────┼──────────┼──────────┤
-│ KEUANGAN                           │          │          │          │
-│ ├─ Lihat Laporan Keuangan         │    ✓     │    ✓     │    ✓     │
-│ ├─ Tambah Transaksi               │    ✓     │    ✗     │    ✗     │
-│ ├─ Edit Transaksi                 │    ✓     │    ✗     │    ✗     │
-│ ├─ Hapus Transaksi                │    ✓     │    ✗     │    ✗     │
-│ ├─ Upload Bukti Transaksi         │    ✓     │    ✗     │    ✗     │
-│ └─ Export Laporan                 │    ✓     │    ✗     │    ✗     │
-└────────────────────────────────────┴──────────┴──────────┴──────────┘
+┌────────────────────────────────────┬──────────┬──────────┐
+│            FITUR                   │  ADMIN   │  ANGGOTA │
+├────────────────────────────────────┼──────────┼──────────┤
+│ AUTENTIKASI                        │          │          │
+│ ├─ Login                          │    ✓     │    ✓     │
+│ ├─ Logout                         │    ✓     │    ✓     │
+│ └─ Reset Password                 │    ✓     │    ✓     │
+├────────────────────────────────────┼──────────┼──────────┤
+│ MANAJEMEN USER                     │          │          │
+│ ├─ Lihat Semua User               │    ✓     │    ✗     │
+│ ├─ Tambah User                    │    ✓     │    ✗     │
+│ ├─ Edit User                      │    ✓     │    ✗     │
+│ ├─ Hapus User                     │    ✓     │    ✗     │
+│ └─ Kelola Peran                   │    ✓     │    ✗     │
+├────────────────────────────────────┼──────────┼──────────┤
+│ JADWAL LATIHAN                     │          │          │
+│ ├─ Lihat Jadwal                   │    ✓     │    ✓     │
+│ ├─ Buat Jadwal                    │    ✓     │    ✗     │
+│ ├─ Edit Jadwal                    │    ✓     │    ✗     │
+│ ├─ Hapus Jadwal                   │    ✓     │    ✗     │
+│ └─ Ganti Status Jadwal            │    ✓     │    ✗     │
+├────────────────────────────────────┼──────────┼──────────┤
+│ ABSENSI                            │          │          │
+│ ├─ Lihat Jadwal Terbaru            │    ✓     │    ✓     │
+│ ├─ Lihat Semua Jadwal              │    ✓     │    ✓     │
+│ ├─ Lihat History Jadwal            │    ✓     │    ✓     │
+│ ├─ Lihat Detail Jadwal             │    ✓     │    ✓     │
+│ ├─ Input Absensi Anggota           │    ✓     │    ✗     │
+│ ├─ Lihat Absensi Semua Anggota    │    ✓     │    ✗     │
+│ └─ Export Data Absensi            │    ✓     │    ✗     │
+├────────────────────────────────────┼──────────┼──────────┤
+│ BOOKING ACARA                      │          │          │
+│ ├─ Lihat Booking                  │    ✓     │    ✓     │
+│ ├─ Buat Booking                   │    ✓     │    ✗     │
+│ ├─ Update Status Booking          │    ✓     │    ✗     │
+│ ├─ Upload Dokumentasi             │    ✓     │    ✗     │
+│ └─ Hapus Booking                  │    ✓     │    ✗     │
+├────────────────────────────────────┼──────────┼──────────┤
+│ INVENTARIS ALAT                    │          │          │
+│ ├─ Lihat Inventaris               │    ✓     │    ✓     │
+│ ├─ Tambah Alat                    │    ✓     │    ✗     │
+│ ├─ Edit Stok Alat                 │    ✓     │    ✗     │
+│ └─ Hapus Alat                     │    ✓     │    ✗     │
+├────────────────────────────────────┼──────────┼──────────┤
+│ KEUANGAN                           │          │          │
+│ ├─ Lihat Laporan Keuangan         │    ✓     │    ✓     │
+│ ├─ Tambah Transaksi               │    ✓     │    ✗     │
+│ ├─ Edit Transaksi                 │    ✓     │    ✗     │
+│ ├─ Hapus Transaksi                │    ✓     │    ✗     │
+│ └─ Export Laporan                 │    ✓     │    ✗     │
+└────────────────────────────────────┴──────────┴──────────┘
 
 KETERANGAN:
 ✓ = Akses Diizinkan
 ✗ = Akses Ditolak
+
+> **Catatan Penting:** Sistem hanya memiliki 2 peran (Admin dan Anggota). Tidak ada role Pembina.
 ```
+
+> **Perubahan dari diagram asli:** Kolom "Pembina" dihapus karena sistem saat ini tidak memiliki role tersebut.
 
 ---
 
