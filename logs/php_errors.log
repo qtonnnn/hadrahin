@@ -60,3 +60,7 @@ Stack trace:
 [18-Feb-2026 18:42:54 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2030
 [18-Feb-2026 18:45:59 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2008
 [18-Feb-2026 18:45:59 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2008
+[21-Feb-2026 09:10:44 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2008
+[21-Feb-2026 09:10:44 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2008
+[21-Feb-2026 09:27:45 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2008
+[21-Feb-2026 09:27:45 Europe/Berlin] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /opt/lampp/htdocs/hadrahin/dashboard/anggota.php on line 2008

@@ -111,24 +111,64 @@ include '../../includes/header.php';
     <?php endif; ?>
 <?php endif; ?>
 
-<!-- Search Form -->
+<!-- Search Form - Auto Search -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="GET" class="d-flex search-form">
-            <div class="input-group" style="max-width: 400px;">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input type="text" name="search" class="form-control" 
+        <form method="GET" class="">
+            <div class="row g-2">
+                <!-- Search -->
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchInput" name="search" class="form-control" 
                                placeholder="Cari username atau nama lengkap..." 
                                value="<?= htmlspecialchars($search) ?>"
                                maxlength="100">
-                <?php if ($search): ?>
-                    <a href="index.php" class="btn btn-outline-secondary">Reset</a>
-                <?php endif; ?>
-                <button type="submit" class="btn btn-primary">Cari</button>
+                        <?php if ($search): ?>
+                            <a href="index.php" class="btn btn-outline-secondary">Reset</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var searchInput = document.getElementById('searchInput');
+    var searchTimeout;
+    
+    if (searchInput) {
+        // Live search dengan debounce
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                var searchValue = searchInput.value.trim();
+                if (searchValue) {
+                    window.location.href = '?search=' + encodeURIComponent(searchValue);
+                } else {
+                    window.location.href = 'index.php';
+                }
+            }, 500);
+        });
+        
+        // Submit form saat tekan Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                var searchValue = searchInput.value.trim();
+                if (searchValue) {
+                    window.location.href = '?search=' + encodeURIComponent(searchValue);
+                } else {
+                    window.location.href = 'index.php';
+                }
+            }
+        });
+    }
+});
+</script>
 
 <!-- Users List - Card View for Mobile, Table for Desktop -->
 <div class="card">

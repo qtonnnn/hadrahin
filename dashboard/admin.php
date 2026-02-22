@@ -84,6 +84,22 @@ $stats['absensi'] = [
     'alpa' => $absensi_stats['alpa'] ?? 0
 ];
 
+// Absensi 30 Hari Terakhir
+$stmt = $pdo->query("SELECT
+    COUNT(*) as total_absensi,
+    SUM(CASE WHEN status_hadir = 'hadir' THEN 1 ELSE 0 END) as hadir,
+    SUM(CASE WHEN status_hadir = 'izin' THEN 1 ELSE 0 END) as izin,
+    SUM(CASE WHEN status_hadir = 'alpa' THEN 1 ELSE 0 END) as alpa
+FROM absen_latihan 
+WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)");
+$absensi_30_hari = $stmt->fetch(PDO::FETCH_ASSOC);
+$stats['absensi_30_hari'] = [
+    'total' => $absensi_30_hari['total_absensi'] ?? 0,
+    'hadir' => $absensi_30_hari['hadir'] ?? 0,
+    'izin' => $absensi_30_hari['izin'] ?? 0,
+    'alpa' => $absensi_30_hari['alpa'] ?? 0
+];
+
 // ============================================
 // KEUANGAN STATISTICS
 // ============================================
@@ -304,31 +320,45 @@ include __DIR__ . '/../includes/header.php';
 
 <!-- Summary Cards -->
 <div class="row g-4 mb-4">
-    <!-- Absensi Summary -->
+    <!-- Absensi Summary - 30 Hari (Circular) -->
     <div class="col-md-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-primary text-white py-3">
                 <h5 class="card-title mb-0">
                     <i class="fas fa-clipboard-check me-2"></i>
-                    Statistik Absensi
+                    Statistik Absensi 30 Hari
                 </h5>
             </div>
-            <div class="card-body">
-                <div class="summary-item">
-                    <span class="summary-label">Total Absensi</span>
-                    <span class="summary-value"><?= $stats['absensi']['total'] ?></span>
+            <div class="card-body text-center">
+                <div class="position-relative d-inline-block mb-3" style="width: 180px; height: 180px;">
+                    <canvas id="absensiPieChart"></canvas>
+                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                        <div class="h3 mb-0 text-primary"><?= $stats['absensi_30_hari']['total'] ?></div>
+                        <small class="text-muted">Total</small>
+                    </div>
                 </div>
-                <div class="summary-item">
-                    <span class="summary-label">Hadir</span>
-                    <span class="summary-value text-success"><?= $stats['absensi']['hadir'] ?></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Izin</span>
-                    <span class="summary-value text-warning"><?= $stats['absensi']['izin'] ?></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Alpa</span>
-                    <span class="summary-value text-danger"><?= $stats['absensi']['alpa'] ?></span>
+                <div class="row text-center mt-3">
+                    <div class="col-4">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <span class="badge bg-success me-1" style="width: 12px; height: 12px;"></span>
+                            <span class="small">Hadir</span>
+                        </div>
+                        <div class="fw-bold"><?= $stats['absensi_30_hari']['hadir'] ?></div>
+                    </div>
+                    <div class="col-4">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <span class="badge bg-warning me-1" style="width: 12px; height: 12px;"></span>
+                            <span class="small">Izin</span>
+                        </div>
+                        <div class="fw-bold"><?= $stats['absensi_30_hari']['izin'] ?></div>
+                    </div>
+                    <div class="col-4">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <span class="badge bg-danger me-1" style="width: 12px; height: 12px;"></span>
+                            <span class="small">Alpa</span>
+                        </div>
+                        <div class="fw-bold"><?= $stats['absensi_30_hari']['alpa'] ?></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -393,24 +423,6 @@ include __DIR__ . '/../includes/header.php';
 
 <!-- Charts and Activities -->
 <div class="row g-4 mb-4">
-    <!-- Keuangan Chart -->
-    <div class="col-lg-8">
-        <div class="chart-card">
-            <div class="card-header">
-                <div>
-                    <h5 class="card-title mb-1">
-                        <i class="fas fa-chart-line me-2 text-success"></i>
-                        Tren Keuangan
-                    </h5>
-                    <p class="card-subtitle mb-0">6 bulan terakhir</p>
-                </div>
-            </div>
-            <div class="chart-container">
-                <canvas id="keuanganChart"></canvas>
-            </div>
-        </div>
-    </div>
-    
     <!-- Recent Activities -->
     <div class="col-lg-4">
         <div class="chart-card h-100">
@@ -439,6 +451,24 @@ include __DIR__ . '/../includes/header.php';
                     </li>
                 <?php endforeach; ?>
             </ul>
+        </div>
+    </div>
+    
+    <!-- Keuangan Chart Section -->
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <div class="card-header">
+                <div>
+                    <h5 class="card-title mb-1">
+                        <i class="fas fa-chart-line me-2 text-success"></i>
+                        Tren Keuangan
+                    </h5>
+                    <p class="card-subtitle mb-0">6 bulan terakhir</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="keuanganChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -501,6 +531,46 @@ include __DIR__ . '/../includes/header.php';
 </style>
 
 <script>
+    // Absensi Pie Chart - 30 Hari
+    const absensiPieCtx = document.getElementById('absensiPieChart').getContext('2d');
+    const absensiPieData = {
+        labels: ['Hadir', 'Izin', 'Alpa'],
+        datasets: [{
+            data: [
+                <?= $stats['absensi_30_hari']['hadir'] ?>,
+                <?= $stats['absensi_30_hari']['izin'] ?>,
+                <?= $stats['absensi_30_hari']['alpa'] ?>
+            ],
+            backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+            borderWidth: 0,
+            hoverOffset: 4
+        }]
+    };
+    
+    new Chart(absensiPieCtx, {
+        type: 'doughnut',
+        data: absensiPieData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                            return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
     // Keuangan Chart
     const keuanganCtx = document.getElementById('keuanganChart').getContext('2d');
     const trenData = <?php echo json_encode($stats['keuangan']['tren_6_bulan']); ?>;
