@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hadrah - Grup Seni Hadrah</title>
+    <link rel="icon" href="assets/img/logo.png" type="image/png">
     <style>
         * {
             margin: 0;
@@ -334,7 +335,7 @@
     <div class="container">
         <div class="logo-wrapper">
             <div class="logo-glow"></div>
-            <div class="logo">🥁</div>
+            <img src="assets/img/logo.png" alt="Hadrah Logo" class="logo" style="width: 250px;height: 250px; object-fit: contain;">
         </div>
 
         <h1 class="title">Hadrahin</h1>
