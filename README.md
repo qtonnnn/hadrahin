@@ -152,13 +152,10 @@ Lihat `api/README.md` untuk 10+ endpoints:
 3. Commit changes
 4. Push & buat Pull Request
 
-## 📄 Lisensi
-
-MIT License - Lihat `LICENSE` (akan dibuat).
 
 ## 🙏 Terima Kasih
 
-Dibuat dengan ❤️ untuk komunitas Hadrah. Saran & kontribusi diterima!
+made in muhammad fatoni || RPL SMKN 2 BANGKALAN
 
 ---
 
